@@ -1,5 +1,6 @@
 import telebot
 import sqlite3
+from datetime import datetime
 from telebot import types
 from ignore.api import API
 
@@ -40,8 +41,13 @@ def add_task(message, edit_msg):
     btn2 = types.InlineKeyboardButton(text='Просмотреть задачи', callback_data='view_tasks')
     kb.add(btn1, btn2)
 
-    bot.edit_message_text(chat_id=message.from_user.id, text='вы добавили задачу', message_id=edit_msg.message_id,
+    bot.edit_message_text(chat_id=message.from_user.id, text=f'вы добавили задачу: {message.text}', message_id=edit_msg.message_id,
                           reply_markup=kb)
+    with sqlite3.connect('ignore/data.db') as connection:
+        cursor = connection.cursor()
+
+        cursor.execute(f'INSERT INTO Tasks{message.from_user.id} (task, time) VALUES (?, ?)',
+                       (f'{message.text}', f'{datetime.today().strftime("%d.%m.%Y %H:%M")}'))
 
 
 @bot.message_handler(commands=['help', 'start'])
