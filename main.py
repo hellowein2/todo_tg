@@ -5,7 +5,7 @@ from ignore.api import API
 
 API_TOKEN = API
 
-__version__ = 'v.0.1'
+__version__ = 'v.0.2'
 
 bot = telebot.TeleBot(API_TOKEN)
 
@@ -23,7 +23,8 @@ def add_users(message):
                     username TEXT
                 )
             ''')
-        cursor.execute('INSERT OR REPLACE INTO Users (user_id, username) VALUES (?, ?)', (user_id, username))
+        cursor.execute('INSERT OR REPLACE INTO Users (user_id, username) VALUES (?, ?)'
+                       , (user_id, username))
 
         cursor.execute(f'''
         CREATE TABLE IF NOT EXISTS Tasks{user_id} (
