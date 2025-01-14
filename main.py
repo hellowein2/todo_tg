@@ -20,13 +20,13 @@ def add_users(message):
         cursor = connection.cursor()
 
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS users (
+            CREATE TABLE IF NOT EXISTS Users (
                 user_id INTEGER PRIMARY KEY,
                 username TEXT
             )
         ''')
 
-        cursor.execute('INSERT INTO Users (user_id, username) VALUES (?, ?)', (f'{user_id}', f'{username}'))
+        cursor.execute('INSERT INTO Users (user_id, username) VALUES (?, ?)', (user_id, username))
 
 
 @bot.message_handler(commands=['help', 'start'])
