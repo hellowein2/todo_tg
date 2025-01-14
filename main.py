@@ -41,13 +41,16 @@ def add_task(message, edit_msg):
     btn2 = types.InlineKeyboardButton(text='Просмотреть задачи', callback_data='view_tasks')
     kb.add(btn1, btn2)
 
-    bot.edit_message_text(chat_id=message.from_user.id, text=f'вы добавили задачу: {message.text}', message_id=edit_msg.message_id,
-                          reply_markup=kb)
     with sqlite3.connect('ignore/data.db') as connection:
         cursor = connection.cursor()
 
         cursor.execute(f'INSERT INTO Tasks{message.from_user.id} (task, time) VALUES (?, ?)',
                        (f'{message.text}', f'{datetime.today().strftime("%d.%m.%Y %H:%M")}'))
+
+    bot.edit_message_text(chat_id=message.from_user.id, text=f'вы добавили задачу: {message.text}',
+                          message_id=edit_msg.message_id,
+                          reply_markup=kb)
+    bot.delete_message(message.chat.id, message.message_id)
 
 
 @bot.message_handler(commands=['help', 'start'])
@@ -89,6 +92,14 @@ def view_specific_task(call):
                                      text='Введите задачу:', reply_markup=kb)
 
     bot.register_next_step_handler(edit_msg, add_task, edit_msg)
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'view_tasks')
+def view_tasks(call):
+    with sqlite3.connect('ignore/data.db') as connection:
+        cursor = connection.cursor()
+        for i in cursor.execute(f'SELECT * FROM Tasks{call.message.chat.id}'):
+            print(i)
 
 
 if __name__ == '__main__':
