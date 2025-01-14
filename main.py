@@ -11,6 +11,24 @@ __version__ = 'v.0.1'
 bot = telebot.TeleBot(API_TOKEN)
 
 
+def add_users(message):
+    user_id = message.from_user.id
+
+    username = message.from_user.username
+
+    with sqlite3.connect('ignore/data.db') as connection:
+        cursor = connection.cursor()
+
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                user_id INTEGER PRIMARY KEY,
+                username TEXT
+            )
+        ''')
+
+        cursor.execute('INSERT INTO Users (user_id, username) VALUES (?, ?)', (f'{user_id}', f'{username}'))
+
+
 @bot.message_handler(commands=['help', 'start'])
 def send_welcome(message):
     kb = types.InlineKeyboardMarkup()
@@ -19,6 +37,8 @@ def send_welcome(message):
     kb.add(btn1, btn2)
 
     bot.send_message(message.chat.id, f'Ку {message.from_user.first_name} я todo list {__version__}', reply_markup=kb)
+
+    add_users(message)
 
 
 @bot.message_handler(content_types=['text'])
