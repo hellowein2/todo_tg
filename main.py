@@ -58,7 +58,8 @@ def send_welcome(message):
     kb = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton(text='Добавить задачу', callback_data='add_task')
     btn2 = types.InlineKeyboardButton(text='Просмотреть задачи', callback_data='view_tasks')
-    kb.add(btn1, btn2)
+    kb.add(btn1)
+    kb.add(btn2)
 
     bot.send_message(message.chat.id, f'Ку {message.from_user.first_name} я todo list {__version__}', reply_markup=kb)
 
@@ -98,8 +99,18 @@ def view_specific_task(call):
 def view_tasks(call):
     with sqlite3.connect('ignore/data.db') as connection:
         cursor = connection.cursor()
+        kb = types.InlineKeyboardMarkup()
+        count = []
         for i in cursor.execute(f'SELECT * FROM Tasks{call.message.chat.id}'):
-            print(i)
+            btn = types.InlineKeyboardButton(text=i[0], callback_data=i[1])
+            count.append(btn)
+        kb.add(*count)
+
+        btn = types.InlineKeyboardButton('Назад', callback_data='back')
+        kb.add(btn)
+        bot.edit_message_text(chat_id=call.message.chat.id,
+                              message_id=call.message.message_id,
+                              text='Ваши задачу:', reply_markup=kb)
 
 
 if __name__ == '__main__':
