@@ -1,7 +1,6 @@
 import telebot
 import sqlite3
 from telebot import types
-from datetime import datetime
 from ignore.api import API
 
 API_TOKEN = API
@@ -13,20 +12,18 @@ bot = telebot.TeleBot(API_TOKEN)
 
 def add_users(message):
     user_id = message.from_user.id
-
     username = message.from_user.username
 
     with sqlite3.connect('ignore/data.db') as connection:
         cursor = connection.cursor()
 
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS Users (
-                user_id INTEGER PRIMARY KEY,
-                username TEXT
-            )
-        ''')
-
-        cursor.execute('INSERT INTO Users (user_id, username) VALUES (?, ?)', (user_id, username))
+                CREATE TABLE IF NOT EXISTS Users (
+                    user_id INTEGER PRIMARY KEY,
+                    username TEXT
+                )
+            ''')
+        cursor.execute('INSERT OR REPLACE INTO Users (user_id, username) VALUES (?, ?)', (user_id, username))
 
 
 @bot.message_handler(commands=['help', 'start'])
