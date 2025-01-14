@@ -25,11 +25,18 @@ def add_users(message):
             ''')
         cursor.execute('INSERT OR REPLACE INTO Users (user_id, username) VALUES (?, ?)', (user_id, username))
 
+        cursor.execute(f'''
+        CREATE TABLE IF NOT EXISTS Tasks{user_id} (
+        task TEXT NOT NULL,
+        time TEXT NOT NULL
+        )
+        ''')
+
 
 @bot.message_handler(commands=['help', 'start'])
 def send_welcome(message):
     kb = types.InlineKeyboardMarkup()
-    btn1 = types.InlineKeyboardButton(text='Добавить задачу', callback_data=f'add_task')
+    btn1 = types.InlineKeyboardButton(text='Добавить задачу', callback_data='add_task')
     btn2 = types.InlineKeyboardButton(text='Просмотреть задачи', callback_data='view_tasks')
     kb.add(btn1, btn2)
 
@@ -39,8 +46,30 @@ def send_welcome(message):
 
 
 @bot.message_handler(content_types=['text'])
-def chatting(message):
+def del_message(message):
     bot.delete_message(message.chat.id, message.message_id)
 
 
-bot.infinity_polling()
+@bot.callback_query_handler(func=lambda call: call.data == 'add_task')
+def view_specific_task(call):
+    kb = types.InlineKeyboardMarkup()
+    btn1 = types.InlineKeyboardButton(text='Назад', callback_data='back')
+    kb.add(btn1)
+    bot.edit_message_text(chat_id=call.message.chat.id,
+                          message_id=call.message.message_id,
+                          text='Введите задачу:', reply_markup=kb)
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'back')
+def back_to_main(call):
+    kb = types.InlineKeyboardMarkup()
+    btn1 = types.InlineKeyboardButton(text='Добавить задачу', callback_data='add_task')
+    btn2 = types.InlineKeyboardButton(text='Просмотреть задачи', callback_data='view_tasks')
+    kb.add(btn1, btn2)
+
+    bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                          text=f'todo list {__version__}', reply_markup=kb)
+
+
+if __name__ == '__main__':
+    bot.infinity_polling(skip_pending=True)
