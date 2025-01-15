@@ -6,7 +6,7 @@ from ignore.api import API
 
 API_TOKEN = API
 
-__version__ = 'v.0.3.5'
+__version__ = 'v.0.4'
 
 bot = telebot.TeleBot(API_TOKEN)
 
@@ -101,8 +101,8 @@ def view_tasks(call):
         cursor = connection.cursor()
         kb = types.InlineKeyboardMarkup()
         count = []
-        for i in cursor.execute(f'SELECT * FROM Tasks{call.message.chat.id}'):
-            btn = types.InlineKeyboardButton(text=i[0], callback_data=f'time_{i[1]}')
+        for i in cursor.execute(f'SELECT rowid, * FROM Tasks{call.message.chat.id}'):
+            btn = types.InlineKeyboardButton(text=i[1], callback_data=f'task_id_{i[0]}')
             count.append(btn)
         kb.add(*count)
         btn = types.InlineKeyboardButton('Назад', callback_data='back')
@@ -114,8 +114,8 @@ def view_tasks(call):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_handler(call):
-    if call.data.startswith('time_'):
-        task_id = call.data.split('_')[1]
+    if call.data.startswith('task_id_'):
+        task_id = call.data.split('_')[2]
         handle_selected_task(call, task_id)
     elif call.data == 'back':
         back_to_main(call)
@@ -125,12 +125,12 @@ def handle_selected_task(call, task_id):
     kb = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton('Назад', callback_data='view_tasks')
     btn2 = types.InlineKeyboardButton('Удалить', callback_data='delete_task')
-    kb.add(btn1,btn2)
+    kb.add(btn1, btn2)
 
     with sqlite3.connect('ignore/data.db') as connection:
         cursor = connection.cursor()
 
-        cursor.execute(f'SELECT * FROM Tasks{call.message.chat.id} WHERE time = ?', (task_id,))
+        cursor.execute(f'SELECT * FROM Tasks{call.message.chat.id} WHERE rowid = ?', (task_id,))
 
         task = cursor.fetchone()
 
