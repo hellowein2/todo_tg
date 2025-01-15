@@ -6,7 +6,7 @@ from ignore.api import API
 
 API_TOKEN = API
 
-__version__ = 'v.0.3'
+__version__ = 'v.0.3.5'
 
 bot = telebot.TeleBot(API_TOKEN)
 
@@ -109,7 +109,7 @@ def view_tasks(call):
         kb.add(btn)
         bot.edit_message_text(chat_id=call.message.chat.id,
                               message_id=call.message.message_id,
-                              text='Ваши задачу:', reply_markup=kb)
+                              text='Ваши задачи:', reply_markup=kb)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -123,8 +123,9 @@ def callback_handler(call):
 
 def handle_selected_task(call, task_id):
     kb = types.InlineKeyboardMarkup()
-    btn = types.InlineKeyboardButton('назад', callback_data='view_tasks')
-    kb.add(btn)
+    btn1 = types.InlineKeyboardButton('Назад', callback_data='view_tasks')
+    btn2 = types.InlineKeyboardButton('Удалить', callback_data='delete_task')
+    kb.add(btn1,btn2)
 
     with sqlite3.connect('ignore/data.db') as connection:
         cursor = connection.cursor()
@@ -135,7 +136,7 @@ def handle_selected_task(call, task_id):
 
         bot.edit_message_text(chat_id=call.message.chat.id,
                               message_id=call.message.message_id,
-                              text=f'Ваши задача: {task[0]} - {task[1]}', reply_markup=kb)
+                              text=f'{task[0]} - {task[1]}', reply_markup=kb)
 
 
 if __name__ == '__main__':
