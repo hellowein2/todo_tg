@@ -102,15 +102,40 @@ def view_tasks(call):
         kb = types.InlineKeyboardMarkup()
         count = []
         for i in cursor.execute(f'SELECT * FROM Tasks{call.message.chat.id}'):
-            btn = types.InlineKeyboardButton(text=i[0], callback_data=i[1])
+            btn = types.InlineKeyboardButton(text=i[0], callback_data=f'time_{i[1]}')
             count.append(btn)
         kb.add(*count)
-
         btn = types.InlineKeyboardButton('Назад', callback_data='back')
         kb.add(btn)
         bot.edit_message_text(chat_id=call.message.chat.id,
                               message_id=call.message.message_id,
                               text='Ваши задачу:', reply_markup=kb)
+
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_handler(call):
+    if call.data.startswith('time_'):
+        task_id = call.data.split('_')[1]
+        handle_selected_task(call, task_id)
+    elif call.data == 'back':
+        back_to_main(call)
+
+
+def handle_selected_task(call, task_id):
+    kb = types.InlineKeyboardMarkup()
+    btn = types.InlineKeyboardButton('назад', callback_data='view_tasks')
+    kb.add(btn)
+
+    with sqlite3.connect('ignore/data.db') as connection:
+        cursor = connection.cursor()
+
+        cursor.execute(f'SELECT * FROM Tasks{call.message.chat.id} WHERE time = ?', (task_id,))
+
+        task = cursor.fetchone()
+
+        bot.edit_message_text(chat_id=call.message.chat.id,
+                              message_id=call.message.message_id,
+                              text=f'Ваши задача: {task[0]} - {task[1]}', reply_markup=kb)
 
 
 if __name__ == '__main__':
