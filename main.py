@@ -6,7 +6,7 @@ from ignore.api import API
 
 API_TOKEN = API
 
-__version__ = 'v.0.6'
+__version__ = 'v.0.6.5'
 
 bot = telebot.TeleBot(API_TOKEN)
 
@@ -30,7 +30,8 @@ def add_users(message):
         cursor.execute(f'''
         CREATE TABLE IF NOT EXISTS Tasks{user_id} (
         task TEXT NOT NULL,
-        time TEXT NOT NULL
+        time TEXT NOT NULL,
+        done INTEGER NOT NULL DEFAULT 0
         )
         ''')
 
@@ -101,19 +102,31 @@ def view_tasks(call):
         cursor = connection.cursor()
         kb = types.InlineKeyboardMarkup()
         count = []
+        done_tasks = []
         task = False
-        for i in cursor.execute(f'SELECT rowid, * FROM Tasks{call.message.chat.id}'):
+        for i in cursor.execute(f'SELECT rowid, * FROM Tasks{call.message.chat.id} WHERE done = ?', (0,)):
             btn = types.InlineKeyboardButton(text=i[1], callback_data=f'task_id_{i[0]}')
             count.append(btn)
             task = True
+        tasks = cursor.execute(f'SELECT task FROM Tasks{call.message.chat.id} WHERE done = ?', (1,)).fetchall()
 
-        if task:
-            kb.add(*count)
-            btn = types.InlineKeyboardButton('Назад', callback_data='back')
-            kb.add(btn)
-            bot.edit_message_text(chat_id=call.message.chat.id,
-                                  message_id=call.message.message_id,
-                                  text='Ваши задачи:', reply_markup=kb)
+        done_tasks = '\n'.join([f"{index + 1}. {task[0]}" for index, task in enumerate(tasks)])
+
+        if task or done_tasks:
+            if done_tasks:
+                kb.add(*count)
+                btn = types.InlineKeyboardButton('Назад', callback_data='back')
+                kb.add(btn)
+                bot.edit_message_text(chat_id=call.message.chat.id,
+                                      message_id=call.message.message_id,
+                                      text=f'Выполненные задачи:\n{done_tasks}', reply_markup=kb)
+            else:
+                kb.add(*count)
+                btn = types.InlineKeyboardButton('Назад', callback_data='back')
+                kb.add(btn)
+                bot.edit_message_text(chat_id=call.message.chat.id,
+                                      message_id=call.message.message_id,
+                                      text='Ваши задачи:', reply_markup=kb)
         else:
             btn = types.InlineKeyboardButton(text='Добавить задачу', callback_data='add_task')
             kb.add(btn)
@@ -130,15 +143,20 @@ def callback_handler(call):
     elif call.data.startswith('delete_task_'):
         task_id = call.data.split('_')[2]
         delete_selected_task(call, task_id)
+    elif call.data.startswith('done_task_'):
+        task_id = call.data.split('_')[2]
+        done_task(call, task_id)
     elif call.data == 'back':
         back_to_main(call)
 
 
 def handle_selected_task(call, task_id):
     kb = types.InlineKeyboardMarkup()
-    btn1 = types.InlineKeyboardButton('Назад', callback_data='view_tasks')
+    btn1 = types.InlineKeyboardButton('Вычеркнуть', callback_data=f'done_task_{task_id}')
     btn2 = types.InlineKeyboardButton('Удалить', callback_data=f'delete_task_{task_id}')
+    btn3 = types.InlineKeyboardButton('Назад', callback_data='view_tasks')
     kb.add(btn1, btn2)
+    kb.add(btn3)
 
     with sqlite3.connect('ignore/data.db') as connection:
         cursor = connection.cursor()
@@ -156,6 +174,13 @@ def delete_selected_task(call, task_id):
     with sqlite3.connect('ignore/data.db') as connection:
         cursor = connection.cursor()
         cursor.execute(f'DELETE FROM Tasks{call.message.chat.id} WHERE rowid = ?', (task_id,))
+    view_tasks(call)
+
+
+def done_task(call, task_id):
+    with sqlite3.connect('ignore/data.db') as connection:
+        cursor = connection.cursor()
+        cursor.execute(f'UPDATE Tasks{call.message.chat.id} SET done = ? WHERE rowid = ?', (1, task_id))
     view_tasks(call)
 
 
