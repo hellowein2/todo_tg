@@ -6,7 +6,7 @@ from ignore.api import API
 
 API_TOKEN = API
 
-__version__ = 'v.0.5'
+__version__ = 'v.0.6'
 
 bot = telebot.TeleBot(API_TOKEN)
 
@@ -47,7 +47,7 @@ def add_task(message, edit_msg):
         cursor.execute(f'INSERT INTO Tasks{message.from_user.id} (task, time) VALUES (?, ?)',
                        (f'{message.text}', f'{datetime.today().strftime("%d.%m.%Y %H:%M")}'))
 
-    bot.edit_message_text(chat_id=message.from_user.id, text=f'вы добавили задачу: {message.text}',
+    bot.edit_message_text(chat_id=message.from_user.id, text=f'Вы добавили задачу: {message.text}',
                           message_id=edit_msg.message_id,
                           reply_markup=kb)
     bot.delete_message(message.chat.id, message.message_id)
@@ -84,13 +84,13 @@ def del_message(message):
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'add_task')
-def view_specific_task(call):
+def pre_add_task(call):
     kb = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton(text='Назад', callback_data='back')
     kb.add(btn1)
     edit_msg = bot.edit_message_text(chat_id=call.message.chat.id,
                                      message_id=call.message.message_id,
-                                     text='Введите задачу:', reply_markup=kb)
+                                     text='Введите задачу', reply_markup=kb)
 
     bot.register_next_step_handler(edit_msg, add_task, edit_msg)
 
@@ -101,15 +101,25 @@ def view_tasks(call):
         cursor = connection.cursor()
         kb = types.InlineKeyboardMarkup()
         count = []
+        task = False
         for i in cursor.execute(f'SELECT rowid, * FROM Tasks{call.message.chat.id}'):
             btn = types.InlineKeyboardButton(text=i[1], callback_data=f'task_id_{i[0]}')
             count.append(btn)
-        kb.add(*count)
-        btn = types.InlineKeyboardButton('Назад', callback_data='back')
-        kb.add(btn)
-        bot.edit_message_text(chat_id=call.message.chat.id,
-                              message_id=call.message.message_id,
-                              text='Ваши задачи:', reply_markup=kb)
+            task = True
+
+        if task:
+            kb.add(*count)
+            btn = types.InlineKeyboardButton('Назад', callback_data='back')
+            kb.add(btn)
+            bot.edit_message_text(chat_id=call.message.chat.id,
+                                  message_id=call.message.message_id,
+                                  text='Ваши задачи:', reply_markup=kb)
+        else:
+            btn = types.InlineKeyboardButton(text='Добавить задачу', callback_data='add_task')
+            kb.add(btn)
+            bot.edit_message_text(chat_id=call.message.chat.id,
+                                  message_id=call.message.message_id,
+                                  text='Задач ещё нет', reply_markup=kb)
 
 
 @bot.callback_query_handler(func=lambda call: True)
