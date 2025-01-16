@@ -8,7 +8,7 @@ import platform
 from babel.dates import format_date
 
 API_TOKEN = API
-__version__ = 'v.0.7.5'
+__version__ = 'v.0.7.6'
 bot = telebot.TeleBot(API_TOKEN)
 locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
 
@@ -158,27 +158,31 @@ def callback_handler(call):
 def handle_selected_task(call, task_id):
     with sqlite3.connect('ignore/data.db') as connection:
         cursor = connection.cursor()
-
         cursor.execute(f'SELECT * FROM Tasks{call.message.chat.id} WHERE rowid = ?', (task_id,))
-
         task = cursor.fetchone()
 
+        formatted_date = format_date_russian(task[1])
+
         kb = types.InlineKeyboardMarkup()
+        btn3 = types.InlineKeyboardButton('Назад', callback_data='view_tasks')
+
         if task[2] == 0:
             btn1 = types.InlineKeyboardButton('Вычеркнуть', callback_data=f'done_task_{task_id}')
             btn2 = types.InlineKeyboardButton('Удалить', callback_data=f'delete_task_{task_id}')
             kb.add(btn1, btn2)
+            kb.add(btn3)
+
+            bot.edit_message_text(chat_id=call.message.chat.id,
+                                  message_id=call.message.message_id,
+                                  text=f'{task[0]} - созданно {formatted_date}', reply_markup=kb)
         else:
             btn = types.InlineKeyboardButton('Удалить', callback_data=f'delete_task_{task_id}')
             kb.add(btn)
+            kb.add(btn3)
 
-        btn3 = types.InlineKeyboardButton('Назад', callback_data='view_tasks')
-        kb.add(btn3)
-        formatted_date = format_date_russian(task[1])
-
-        bot.edit_message_text(chat_id=call.message.chat.id,
-                              message_id=call.message.message_id,
-                              text=f'{task[0]} - {formatted_date}', reply_markup=kb)
+            bot.edit_message_text(chat_id=call.message.chat.id,
+                                  message_id=call.message.message_id,
+                                  text=f'{task[0]} - сделанно {formatted_date}', reply_markup=kb)
 
 
 def delete_selected_task(call, task_id):
@@ -192,6 +196,8 @@ def done_task(call, task_id):
     with sqlite3.connect('ignore/data.db') as connection:
         cursor = connection.cursor()
         cursor.execute(f'UPDATE Tasks{call.message.chat.id} SET done = ? WHERE rowid = ?', (1, task_id))
+        cursor.execute(f'UPDATE Tasks{call.message.chat.id} SET time = ? WHERE rowid = ?',
+                       (f'{datetime.today().strftime("%d.%m.%Y %H:%M")}', task_id))
     view_tasks(call)
 
 
