@@ -6,7 +6,7 @@ from ignore.api import API
 
 API_TOKEN = API
 
-__version__ = 'v.0.6.5'
+__version__ = 'v.0.7'
 
 bot = telebot.TeleBot(API_TOKEN)
 
@@ -101,32 +101,26 @@ def view_tasks(call):
     with sqlite3.connect('ignore/data.db') as connection:
         cursor = connection.cursor()
         kb = types.InlineKeyboardMarkup()
-        count = []
-        done_tasks = []
-        task = False
-        for i in cursor.execute(f'SELECT rowid, * FROM Tasks{call.message.chat.id} WHERE done = ?', (0,)):
-            btn = types.InlineKeyboardButton(text=i[1], callback_data=f'task_id_{i[0]}')
-            count.append(btn)
-            task = True
-        tasks = cursor.execute(f'SELECT task FROM Tasks{call.message.chat.id} WHERE done = ?', (1,)).fetchall()
 
-        done_tasks = '\n'.join([f"{index + 1}. {task[0]}" for index, task in enumerate(tasks)])
+        pending_tasks = cursor.execute(f'SELECT rowid, * FROM Tasks{call.message.chat.id} WHERE done = ?',
+                                       (0,)).fetchall()
+        completed_tasks = cursor.execute(f'SELECT rowid, * FROM Tasks{call.message.chat.id} WHERE done = ?',
+                                         (1,)).fetchall()
 
-        if task or done_tasks:
-            if done_tasks:
-                kb.add(*count)
-                btn = types.InlineKeyboardButton('Назад', callback_data='back')
+        if pending_tasks or completed_tasks:
+            for i in pending_tasks:
+                btn = types.InlineKeyboardButton(text=i[1], callback_data=f'task_id_{i[0]}')
                 kb.add(btn)
-                bot.edit_message_text(chat_id=call.message.chat.id,
-                                      message_id=call.message.message_id,
-                                      text=f'Выполненные задачи:\n{done_tasks}', reply_markup=kb)
-            else:
-                kb.add(*count)
-                btn = types.InlineKeyboardButton('Назад', callback_data='back')
-                kb.add(btn)
-                bot.edit_message_text(chat_id=call.message.chat.id,
-                                      message_id=call.message.message_id,
-                                      text='Ваши задачи:', reply_markup=kb)
+            if completed_tasks:
+                for i in completed_tasks:
+                    btn = types.InlineKeyboardButton(text=f'{i[1]} ✅', callback_data=f'task_id_{i[0]}')
+                    kb.add(btn)
+
+            btn = types.InlineKeyboardButton('Назад', callback_data='back')
+            kb.add(btn)
+            bot.edit_message_text(chat_id=call.message.chat.id,
+                                  message_id=call.message.message_id,
+                                  text='Ваши задачи:', reply_markup=kb)
         else:
             btn = types.InlineKeyboardButton(text='Добавить задачу', callback_data='add_task')
             kb.add(btn)
