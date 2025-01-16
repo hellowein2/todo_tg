@@ -3,12 +3,14 @@ import sqlite3
 from datetime import datetime
 from telebot import types
 from ignore.api import API
+import locale
+import platform
+from babel.dates import format_date
 
 API_TOKEN = API
-
-__version__ = 'v.0.7'
-
+__version__ = 'v.0.7.5'
 bot = telebot.TeleBot(API_TOKEN)
+locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
 
 
 def add_users(message):
@@ -52,6 +54,15 @@ def add_task(message, edit_msg):
                           message_id=edit_msg.message_id,
                           reply_markup=kb)
     bot.delete_message(message.chat.id, message.message_id)
+
+
+def format_date_russian(date_string):
+    if platform.system() == 'Windows':
+        date_object = datetime.strptime(date_string, "%d.%m.%Y %H:%M")
+        return format_date(date_object, 'd MMMM', locale='ru')
+    else:
+        date_object = datetime.strptime(date_string, "%d.%m.%Y %H:%M")
+        return date_object.strftime('%-d %B')
 
 
 @bot.message_handler(commands=['help', 'start'])
@@ -145,13 +156,6 @@ def callback_handler(call):
 
 
 def handle_selected_task(call, task_id):
-    kb = types.InlineKeyboardMarkup()
-    btn1 = types.InlineKeyboardButton('Вычеркнуть', callback_data=f'done_task_{task_id}')
-    btn2 = types.InlineKeyboardButton('Удалить', callback_data=f'delete_task_{task_id}')
-    btn3 = types.InlineKeyboardButton('Назад', callback_data='view_tasks')
-    kb.add(btn1, btn2)
-    kb.add(btn3)
-
     with sqlite3.connect('ignore/data.db') as connection:
         cursor = connection.cursor()
 
@@ -159,9 +163,22 @@ def handle_selected_task(call, task_id):
 
         task = cursor.fetchone()
 
+        kb = types.InlineKeyboardMarkup()
+        if task[2] == 0:
+            btn1 = types.InlineKeyboardButton('Вычеркнуть', callback_data=f'done_task_{task_id}')
+            btn2 = types.InlineKeyboardButton('Удалить', callback_data=f'delete_task_{task_id}')
+            kb.add(btn1, btn2)
+        else:
+            btn = types.InlineKeyboardButton('Удалить', callback_data=f'delete_task_{task_id}')
+            kb.add(btn)
+
+        btn3 = types.InlineKeyboardButton('Назад', callback_data='view_tasks')
+        kb.add(btn3)
+        formatted_date = format_date_russian(task[1])
+
         bot.edit_message_text(chat_id=call.message.chat.id,
                               message_id=call.message.message_id,
-                              text=f'{task[0]} - {task[1]}', reply_markup=kb)
+                              text=f'{task[0]} - {formatted_date}', reply_markup=kb)
 
 
 def delete_selected_task(call, task_id):
