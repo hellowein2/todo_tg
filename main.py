@@ -62,7 +62,7 @@ def format_date_russian(date_string):
         return format_date(date_object, 'd MMMM', locale='ru')
     else:
         date_object = datetime.strptime(date_string, "%d.%m.%Y %H:%M")
-        return date_object.strftime('%-d %B')
+        return format_date(date_object, 'd MMMM', locale='ru')
 
 
 @bot.message_handler(commands=['help', 'start'])
