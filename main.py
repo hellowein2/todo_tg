@@ -9,7 +9,7 @@ import os
 
 API_TOKEN = os.environ.get('BOT_TOKEN')
 
-__version__ = 'v.0.7.6'
+__version__ = 'v.0.8'
 bot = telebot.TeleBot(API_TOKEN)
 locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
 
