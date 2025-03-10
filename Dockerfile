@@ -4,6 +4,8 @@ FROM python:3.12.3
 # Установим необходимые пакеты для управления локалями
 RUN apt-get update && apt-get install -y locales
 
+RUN mkdir ignore
+
 # Активируем русскую локаль
 RUN sed -i '/ru_RU.UTF-8/s/^# //g' /etc/locale.gen && \
     locale-gen
