@@ -2,12 +2,13 @@ import telebot
 import sqlite3
 from datetime import datetime
 from telebot import types
-from ignore.api import API
 import locale
 import platform
 from babel.dates import format_date
+import os
 
-API_TOKEN = API
+API_TOKEN = os.environ.get('BOT_TOKEN')
+
 __version__ = 'v.0.7.6'
 bot = telebot.TeleBot(API_TOKEN)
 locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
