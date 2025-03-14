@@ -2,7 +2,6 @@ import telebot
 from datetime import datetime
 from telebot import types
 import locale
-import platform
 from babel.dates import format_date
 import os
 
