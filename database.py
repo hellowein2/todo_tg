@@ -22,12 +22,6 @@ class Database:
         with sqlite3.connect('ignore/data.db') as connection:
             cursor = connection.cursor()
 
-            cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS Users (
-                        user_id INTEGER PRIMARY KEY,
-                        username TEXT
-                    )
-                ''')
             cursor.execute('INSERT OR REPLACE INTO Users (user_id, username) VALUES (?, ?)'
                            , (user_id, username))
 
@@ -44,7 +38,7 @@ class Database:
             cursor = connection.cursor()
 
             cursor.execute(f'INSERT INTO Tasks{user_id} (task, time) VALUES (?, ?)',
-                           (f'{task}', f'{time}'))
+                           (task, time))
 
     def get_tasks(self, user_id):
         with sqlite3.connect('ignore/data.db') as connection:
@@ -74,4 +68,4 @@ class Database:
             cursor = connection.cursor()
             cursor.execute(f'UPDATE Tasks{user_id} SET done = ? WHERE rowid = ?', (1, task_id))
             cursor.execute(f'UPDATE Tasks{user_id} SET time = ? WHERE rowid = ?',
-                           (f'{datetime.today().strftime("%d.%m.%Y %H:%M")}', task_id))
+                           (datetime.today().strftime("%d.%m.%Y %H:%M"), task_id))
