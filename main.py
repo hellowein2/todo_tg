@@ -16,12 +16,6 @@ bot = telebot.TeleBot(API_TOKEN)
 locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
 
 
-def add_users(message):
-    user_id = message.from_user.id
-    username = message.from_user.username
-    db.add_user(user_id, username)
-
-
 def add_task(message, edit_msg):
     kb = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton(text='Добавить задачу', callback_data='add_task')
@@ -55,7 +49,7 @@ def send_welcome(message):
 
     bot.send_message(message.chat.id, f'Ку {message.from_user.first_name} я todo list {__version__}', reply_markup=kb)
 
-    add_users(message)
+    db.add_user(message.chat.id, message.from_user.first_name)
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'back')
