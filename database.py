@@ -33,7 +33,7 @@ class Database:
             )
             ''')
 
-    def create_tak(self, user_id, task, time):
+    def create_task(self, user_id, task, time):
         with sqlite3.connect('ignore/data.db') as connection:
             cursor = connection.cursor()
 
