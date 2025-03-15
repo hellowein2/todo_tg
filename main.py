@@ -11,27 +11,27 @@ db = Database('ignore/data.db')
 
 API_TOKEN = os.environ.get('BOT_TOKEN')
 
-__version__ = 'v.0.8'
+__version__ = 'v.0.8.6'
 bot = telebot.TeleBot(API_TOKEN)
 locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
 
 
-def add_task(message, edit_msg):
+def main_btn():
     kb = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton(text='Добавить задачу', callback_data='add_task')
     btn2 = types.InlineKeyboardButton(text='Просмотреть задачи', callback_data='view_tasks')
     kb.add(btn1, btn2)
+    return kb
 
-    user_id = message.from_user.id
-    task = message.text
-    time = datetime.today().strftime("%d.%m.%Y %H:%M")
 
+def add_task(message, edit_msg):
+    kb = main_btn()
     bot.delete_message(message.chat.id, message.message_id)
-    bot.edit_message_text(chat_id=message.from_user.id, text=f'Вы добавили задачу: {task}',
+    bot.edit_message_text(chat_id=message.from_user.id, text=f'Вы добавили задачу: {message.text}',
                           message_id=edit_msg.message_id,
                           reply_markup=kb)
 
-    db.create_task(user_id, task, time)
+    db.create_task(message.from_user.id, message.text, datetime.today().strftime("%d.%m.%Y %H:%M"))
 
 
 def format_date_russian(date_string):
@@ -41,11 +41,7 @@ def format_date_russian(date_string):
 
 @bot.message_handler(commands=['help', 'start'])
 def send_welcome(message):
-    kb = types.InlineKeyboardMarkup()
-    btn1 = types.InlineKeyboardButton(text='Добавить задачу', callback_data='add_task')
-    btn2 = types.InlineKeyboardButton(text='Просмотреть задачи', callback_data='view_tasks')
-    kb.add(btn1)
-    kb.add(btn2)
+    kb = main_btn()
 
     bot.send_message(message.chat.id, f'Ку {message.from_user.first_name} я todo list {__version__}', reply_markup=kb)
 
@@ -55,10 +51,7 @@ def send_welcome(message):
 @bot.callback_query_handler(func=lambda call: call.data == 'back')
 def back_to_main(call):
     bot.clear_step_handler_by_chat_id(chat_id=call.message.chat.id)
-    kb = types.InlineKeyboardMarkup()
-    btn1 = types.InlineKeyboardButton(text='Добавить задачу', callback_data='add_task')
-    btn2 = types.InlineKeyboardButton(text='Просмотреть задачи', callback_data='view_tasks')
-    kb.add(btn1, btn2)
+    kb = main_btn()
 
     bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                           text=f'todo list {__version__}', reply_markup=kb)
