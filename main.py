@@ -4,8 +4,9 @@ from telebot import types
 import locale
 from babel.dates import format_date
 import os
-
+import threading
 from database import Database
+import time
 
 db = Database('ignore/data.db')
 
@@ -127,10 +128,9 @@ def remind_message(call, task_id):
     bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text='Через 5 минут')
 
     now = datetime.now()
-    add_time = now + timedelta(minutes=5)
+    add_time = now + timedelta(minutes=1)
 
     db.remind_task(call.message.chat.id, task_id, add_time.strftime("%Y-%m-%d %H:%M"))
-    print(type(now))
 
 
 def handle_selected_task(call, task_id):
@@ -161,5 +161,22 @@ def handle_selected_task(call, task_id):
                               text=f'{task[0]} - сделанно {formatted_date}', reply_markup=kb)
 
 
+def check_reminders():
+    while True:
+        now = datetime.now().strftime("%Y-%m-%d %H:%M")
+        tasks = db.get_reminded_tasks()
+        for task in tasks:
+            if task[4] == now:
+                kb = main_btn()
+                bot.send_message(task[5], f"Напоминание о задаче: {task[1]}", reply_markup=kb)
+        time.sleep(60)
+
+
+def start_reminder_service():
+    reminder_thread = threading.Thread(target=check_reminders)
+    reminder_thread.start()
+
+
 if __name__ == '__main__':
+    start_reminder_service()
     bot.infinity_polling(skip_pending=True)
