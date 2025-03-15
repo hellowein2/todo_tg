@@ -125,7 +125,7 @@ def callback_handler(call):
 
 
 def remind_message(call, task_id):
-    bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text='Через 5 минут')
+    bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text='Через минуту')
 
     now = datetime.now()
     add_time = now + timedelta(minutes=1)
