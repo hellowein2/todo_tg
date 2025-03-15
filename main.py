@@ -1,5 +1,5 @@
 import telebot
-from datetime import datetime
+from datetime import datetime, timedelta
 from telebot import types
 import locale
 from babel.dates import format_date
@@ -105,19 +105,32 @@ def view_tasks(call):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_handler(call):
+    task_id = call.data.split('_')[2]
+
     if call.data.startswith('task_id_'):
-        task_id = call.data.split('_')[2]
         handle_selected_task(call, task_id)
     elif call.data.startswith('delete_task_'):
-        task_id = call.data.split('_')[2]
         db.delete_task(call.message.chat.id, task_id)
         view_tasks(call)
     elif call.data.startswith('done_task_'):
-        task_id = call.data.split('_')[2]
         db.done_task(call.message.chat.id, task_id)
         view_tasks(call)
+
+    elif call.data.startswith('remind_task_'):
+        remind_message(call, task_id)
+
     elif call.data == 'back':
         back_to_main(call)
+
+
+def remind_message(call, task_id):
+    bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text='Через 5 минут')
+
+    now = datetime.now()
+    add_time = now + timedelta(minutes=5)
+
+    db.remind_task(call.message.chat.id, task_id, add_time.strftime("%Y-%m-%d %H:%M"))
+    print(type(now))
 
 
 def handle_selected_task(call, task_id):
@@ -126,13 +139,14 @@ def handle_selected_task(call, task_id):
     formatted_date = format_date_russian(task[1])
 
     kb = types.InlineKeyboardMarkup()
-    btn3 = types.InlineKeyboardButton('Назад', callback_data='view_tasks')
+    btn_back = types.InlineKeyboardButton('Назад', callback_data='view_tasks')
 
     if task[2] == 0:
         btn1 = types.InlineKeyboardButton('Вычеркнуть', callback_data=f'done_task_{task_id}')
         btn2 = types.InlineKeyboardButton('Удалить', callback_data=f'delete_task_{task_id}')
+        btn3 = types.InlineKeyboardButton('Напомнить', callback_data=f'remind_task_{task_id}')
         kb.add(btn1, btn2)
-        kb.add(btn3)
+        kb.add(btn3, btn_back)
 
         bot.edit_message_text(chat_id=call.message.chat.id,
                               message_id=call.message.message_id,
@@ -140,7 +154,7 @@ def handle_selected_task(call, task_id):
     else:
         btn = types.InlineKeyboardButton('Удалить', callback_data=f'delete_task_{task_id}')
         kb.add(btn)
-        kb.add(btn3)
+        kb.add(btn_back)
 
         bot.edit_message_text(chat_id=call.message.chat.id,
                               message_id=call.message.message_id,

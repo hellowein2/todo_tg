@@ -29,7 +29,8 @@ class Database:
             CREATE TABLE IF NOT EXISTS Tasks{user_id} (
             task TEXT NOT NULL,
             time TEXT NOT NULL,
-            done INTEGER NOT NULL DEFAULT 0
+            done INTEGER NOT NULL DEFAULT 0,
+            reminder_time TEXT
             )
             ''')
 
@@ -69,3 +70,21 @@ class Database:
             cursor.execute(f'UPDATE Tasks{user_id} SET done = ? WHERE rowid = ?', (1, task_id))
             cursor.execute(f'UPDATE Tasks{user_id} SET time = ? WHERE rowid = ?',
                            (datetime.today().strftime("%d.%m.%Y %H:%M"), task_id))
+
+
+    def remind_task(self,user_id, task_id, time):
+        with sqlite3.connect('ignore/data.db') as connection:
+            cursor = connection.cursor()
+
+            cursor.execute(f'UPDATE Tasks{user_id} SET reminder_time = ? WHERE rowid = ?', (time, task_id))
+
+
+
+
+
+
+
+
+
+
+
