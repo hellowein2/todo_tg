@@ -57,7 +57,7 @@ class Database:
         with sqlite3.connect('ignore/data.db') as connection:
             cursor = connection.cursor()
 
-            cursor.execute(f'SELECT rowid, * FROM Tasks WHERE reminder_time IS NOT NULL')
+            cursor.execute(f'SELECT rowid, * FROM Tasks WHERE reminder_time IS NOT NULL AND done = 0')
             tasks = cursor.fetchall()
             return tasks
 
@@ -80,6 +80,8 @@ class Database:
                            (1, task_id, user_id))
             cursor.execute(f'UPDATE Tasks SET time = ? WHERE rowid = ? AND user_id = ?',
                            (datetime.today().strftime("%d.%m.%Y %H:%M"), task_id, user_id))
+            cursor.execute(f'UPDATE Tasks SET reminder_time = ? WHERE rowid = ?',
+                           (None, task_id))
 
     def remind_task(self, user_id, task_id, time):
         with sqlite3.connect('ignore/data.db') as connection:
@@ -87,3 +89,10 @@ class Database:
 
             cursor.execute(f'UPDATE Tasks SET reminder_time = ? WHERE rowid = ? AND user_id = ?',
                            (time, task_id, user_id))
+
+    def clear_remind(self, task_id, time):
+        with sqlite3.connect('ignore/data.db') as connection:
+            cursor = connection.cursor()
+
+            cursor.execute(f'UPDATE Tasks SET reminder_time = ? WHERE rowid = ?',
+                           (time, task_id))

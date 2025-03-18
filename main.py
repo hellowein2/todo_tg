@@ -13,7 +13,7 @@ db = Database('ignore/data.db')
 
 API_TOKEN = os.environ.get('BOT_TOKEN')
 
-__version__ = 'v.0.9.1'
+__version__ = 'v.1.0.0'
 bot = telebot.TeleBot(API_TOKEN)
 locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
 
@@ -139,22 +139,30 @@ def pre_remind_message(call, task_id):
     kb.add(btn1)
     edit_msg = bot.edit_message_text(chat_id=call.message.chat.id,
                                      message_id=call.message.message_id,
-                                     text='Введите в какое время напомнить:', reply_markup=kb)
+                                     text='Введите в какое время напомнить', reply_markup=kb)
 
     bot.register_next_step_handler(edit_msg, remind_message, edit_msg, task_id)
 
 
 def remind_message(message, edit_msg, task_id):
     if validate_time_format(message.text):
+        now = datetime.now().strftime("%H:%M")
+
+        user_time = datetime.strptime(message.text, "%H:%M").time()
+        hm_now = datetime.strptime(now, "%H:%M").time()
+        if user_time <= hm_now:
+            add_time = datetime.now() + timedelta(days=1)
+            remind_time = add_time.strftime("%d.%m.%Y ") + str(message.text)
+            db.remind_task(message.chat.id, task_id, remind_time)
+        else:
+            remind_time = datetime.now().strftime("%d.%m.%Y ") + str(message.text)
+            db.remind_task(message.chat.id, task_id, remind_time)
+
         bot.delete_message(message.chat.id, message.message_id)
         kb = main_btn()
         bot.edit_message_text(chat_id=message.chat.id, message_id=edit_msg.message_id, text=f'Напомню в {message.text}',
                               reply_markup=kb)
 
-        now = datetime.now()
-        add_time = now + timedelta(minutes=1)
-
-        db.remind_task(message.chat.id, task_id, add_time.strftime("%Y-%m-%d %H:%M"))
     else:
         bot.delete_message(message.chat.id, message.message_id)
 
@@ -198,12 +206,13 @@ def handle_selected_task(call, task_id):
 
 def check_reminders():
     while True:
-        now = datetime.now().strftime("%Y-%m-%d %H:%M")
+        now = datetime.now().strftime("%d.%m.%Y %H:%M")
         tasks = db.get_reminded_tasks()
         for task in tasks:
             if task[4] == now:
                 kb = main_btn()
                 bot.send_message(task[5], f"Напоминание о задаче: {task[1]}", reply_markup=kb)
+                db.clear_remind(task_id=task[0], time=None)
         time.sleep(60)
 
 
