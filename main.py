@@ -7,14 +7,23 @@ import os
 import threading
 from database import Database
 import time
+import re
 
 db = Database('ignore/data.db')
 
 API_TOKEN = os.environ.get('BOT_TOKEN')
 
-__version__ = 'v.0.8.6'
+__version__ = 'v.0.9.1'
 bot = telebot.TeleBot(API_TOKEN)
 locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
+
+
+def validate_time_format(time_input):
+    time_pattern = r"^(?:[01]\d|2[0-3]):[0-5]\d$"
+    if re.match(time_pattern, time_input):
+        return True
+    else:
+        return False
 
 
 def main_btn():
@@ -118,19 +127,45 @@ def callback_handler(call):
         view_tasks(call)
 
     elif call.data.startswith('remind_task_'):
-        remind_message(call, task_id)
+        pre_remind_message(call, task_id)
 
     elif call.data == 'back':
         back_to_main(call)
 
 
-def remind_message(call, task_id):
-    bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text='Через минуту')
+def pre_remind_message(call, task_id):
+    kb = types.InlineKeyboardMarkup()
+    btn1 = types.InlineKeyboardButton(text='Назад', callback_data='back')
+    kb.add(btn1)
+    edit_msg = bot.edit_message_text(chat_id=call.message.chat.id,
+                                     message_id=call.message.message_id,
+                                     text='Введите в какое время напомнить:', reply_markup=kb)
 
-    now = datetime.now()
-    add_time = now + timedelta(minutes=1)
+    bot.register_next_step_handler(edit_msg, remind_message, edit_msg, task_id)
 
-    db.remind_task(call.message.chat.id, task_id, add_time.strftime("%Y-%m-%d %H:%M"))
+
+def remind_message(message, edit_msg, task_id):
+    if validate_time_format(message.text):
+        bot.delete_message(message.chat.id, message.message_id)
+        kb = main_btn()
+        bot.edit_message_text(chat_id=message.chat.id, message_id=edit_msg.message_id, text=f'Напомню в {message.text}',
+                              reply_markup=kb)
+
+        now = datetime.now()
+        add_time = now + timedelta(minutes=1)
+
+        db.remind_task(message.chat.id, task_id, add_time.strftime("%Y-%m-%d %H:%M"))
+    else:
+        bot.delete_message(message.chat.id, message.message_id)
+
+        kb = types.InlineKeyboardMarkup()
+        btn1 = types.InlineKeyboardButton(text='Назад', callback_data='back')
+        kb.add(btn1)
+        edit_msg = bot.edit_message_text(chat_id=message.chat.id, message_id=edit_msg.message_id,
+                                         text=f'{message.text}'
+                                              f' - некорректный формат времени. Введите время в формате HH:MM',
+                                         reply_markup=kb)
+        bot.register_next_step_handler(edit_msg, remind_message, edit_msg, task_id)
 
 
 def handle_selected_task(call, task_id):
