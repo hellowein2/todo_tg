@@ -18,13 +18,6 @@ class Database:
                     )
                 ''')
 
-    def add_user(self, user_id, username):
-        with sqlite3.connect('ignore/data.db') as connection:
-            cursor = connection.cursor()
-
-            cursor.execute('INSERT OR REPLACE INTO Users (user_id, username) VALUES (?, ?)'
-                           , (user_id, username))
-
             cursor.execute(f'''
             CREATE TABLE IF NOT EXISTS Tasks (
             task TEXT NOT NULL,
@@ -34,6 +27,15 @@ class Database:
             user_id INTEGER NOT NULL
             )
             ''')
+
+    def add_user(self, user_id, username):
+        with sqlite3.connect('ignore/data.db') as connection:
+            cursor = connection.cursor()
+
+            cursor.execute('INSERT OR REPLACE INTO Users (user_id, username) VALUES (?, ?)'
+                           , (user_id, username))
+
+
 
     def create_task(self, user_id, task, time):
         with sqlite3.connect('ignore/data.db') as connection:

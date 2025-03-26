@@ -2,7 +2,7 @@ import telebot
 from datetime import datetime, timedelta
 from telebot import types
 import locale
-from babel.dates import format_date
+from babel.dates import format_date, format_datetime
 import os
 import threading
 from database import Database
@@ -13,7 +13,7 @@ db = Database('ignore/data.db')
 
 API_TOKEN = os.environ.get('BOT_TOKEN')
 
-__version__ = 'v.1.0.0'
+__version__ = 'v.1.0.1'
 bot = telebot.TeleBot(API_TOKEN)
 locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
 
@@ -47,6 +47,11 @@ def add_task(message, edit_msg):
 def format_date_russian(date_string):
     date_object = datetime.strptime(date_string, "%d.%m.%Y %H:%M")
     return format_date(date_object, 'd MMMM', locale='ru')
+
+
+def format_date_russian_with_minutes(date_string):
+    date_object = datetime.strptime(date_string, "%d.%m.%Y %H:%M")
+    return format_datetime(date_object, 'd MMMM HH:mm', locale='ru')
 
 
 @bot.message_handler(commands=['help', 'start'])
@@ -93,8 +98,15 @@ def view_tasks(call):
 
     if pending_tasks or completed_tasks:
         for i in pending_tasks:
-            btn = types.InlineKeyboardButton(text=i[1], callback_data=f'task_id_{i[0]}')
-            kb.add(btn)
+            if i[4]:
+                btn = types.InlineKeyboardButton(text=f'{i[1]} ⏳', callback_data=f'task_id_{i[0]}')
+                kb.add(btn)
+
+        for i in pending_tasks:
+            if i[4] is None:
+                btn = types.InlineKeyboardButton(text=i[1], callback_data=f'task_id_{i[0]}')
+                kb.add(btn)
+
         if completed_tasks:
             for i in completed_tasks:
                 btn = types.InlineKeyboardButton(text=f'{i[1]} ✅', callback_data=f'task_id_{i[0]}')
@@ -116,7 +128,6 @@ def view_tasks(call):
 @bot.callback_query_handler(func=lambda call: True)
 def callback_handler(call):
     task_id = call.data.split('_')[2]
-
     if call.data.startswith('task_id_'):
         handle_selected_task(call, task_id)
     elif call.data.startswith('delete_task_'):
@@ -152,11 +163,13 @@ def remind_message(message, edit_msg, task_id):
         hm_now = datetime.strptime(now, "%H:%M").time()
         if user_time <= hm_now:
             add_time = datetime.now() + timedelta(days=1)
-            remind_time = add_time.strftime("%d.%m.%Y ") + str(message.text)
-            db.remind_task(message.chat.id, task_id, remind_time)
+            remind_time = datetime.strptime(f'{add_time.strftime("%d.%m.%Y")} {message.text}', "%d.%m.%Y %H:%M")
+            db.remind_task(message.chat.id, task_id, remind_time.strftime("%d.%m.%Y %H:%M"))
+
         else:
-            remind_time = datetime.now().strftime("%d.%m.%Y ") + str(message.text)
-            db.remind_task(message.chat.id, task_id, remind_time)
+            remind_time = datetime.strptime(f'{datetime.now().strftime("%d.%m.%Y")}'
+                                            f' {message.text}', "%d.%m.%Y %H:%M")
+            db.remind_task(message.chat.id, task_id, remind_time.strftime("%d.%m.%Y %H:%M"))
 
         bot.delete_message(message.chat.id, message.message_id)
         kb = main_btn()
@@ -185,15 +198,29 @@ def handle_selected_task(call, task_id):
     btn_back = types.InlineKeyboardButton('Назад', callback_data='view_tasks')
 
     if task[2] == 0:
-        btn1 = types.InlineKeyboardButton('Вычеркнуть', callback_data=f'done_task_{task_id}')
-        btn2 = types.InlineKeyboardButton('Удалить', callback_data=f'delete_task_{task_id}')
-        btn3 = types.InlineKeyboardButton('Напомнить', callback_data=f'remind_task_{task_id}')
-        kb.add(btn1, btn2)
-        kb.add(btn3, btn_back)
+        if task[3] is None:
+            btn1 = types.InlineKeyboardButton('Вычеркнуть', callback_data=f'done_task_{task_id}')
+            btn2 = types.InlineKeyboardButton('Удалить', callback_data=f'delete_task_{task_id}')
+            btn3 = types.InlineKeyboardButton('Напомнить', callback_data=f'remind_task_{task_id}')
+            kb.add(btn1, btn2)
+            kb.add(btn3, btn_back)
 
-        bot.edit_message_text(chat_id=call.message.chat.id,
-                              message_id=call.message.message_id,
-                              text=f'{task[0]} - созданно {formatted_date}', reply_markup=kb)
+            bot.edit_message_text(chat_id=call.message.chat.id,
+                                  message_id=call.message.message_id,
+                                  text=f'{task[0]} - созданно {formatted_date}', reply_markup=kb)
+        else:
+            formatted_reminder_date = format_date_russian_with_minutes(task[3])
+
+            btn1 = types.InlineKeyboardButton('Вычеркнуть', callback_data=f'done_task_{task_id}')
+            btn2 = types.InlineKeyboardButton('Удалить', callback_data=f'delete_task_{task_id}')
+            btn3 = types.InlineKeyboardButton('Изменить напоминание', callback_data=f'remind_task_{task_id}')
+            kb.add(btn1, btn2)
+            kb.add(btn3, btn_back)
+
+            bot.edit_message_text(chat_id=call.message.chat.id,
+                                  message_id=call.message.message_id,
+                                  text=f'{task[0]} - созданно {formatted_date}\nнапоминание на '
+                                       f'{formatted_reminder_date}', reply_markup=kb)
     else:
         btn = types.InlineKeyboardButton('Удалить', callback_data=f'delete_task_{task_id}')
         kb.add(btn)
