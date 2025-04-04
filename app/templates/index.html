@@ -1,15 +1,82 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список задач</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #4a90e2;
+        }
+        .task-list {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .task-category {
+            margin-bottom: 30px;
+        }
+        .task-category h2 {
+            color: #4a4a4a;
+            border-bottom: 2px solid #4a90e2;
+            padding-bottom: 5px;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        li {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        li:last-child {
+            border-bottom: none;
+        }
+        .completed {
+            color: #28a745;
+        }
+        .pending {
+            color: #d9534f;
+        }
+    </style>
 </head>
 <body>
-<h1>
-    {{ message }}
-</h1>
+    <h1>Ваши задачи</h1>
+    <div class="task-list">
+        <div class="task-category">
+            <h2>Выполненные задачи</h2>
+            <ul>
+                {% for task in completed_tasks %}
+                <li class="completed">{{ task }}</li>
+                {% else %}
+                <li class="pending">Нет выполненных задач.</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="task-category">
+            <h2>Невыполненные задачи</h2>
+            <ul>
+                {% for task in pending_tasks %}
+                <li class="pending">{{ task }}</li>
+                {% else %}
+                <li class="completed">Нет невыполненных задач.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 </body>
 </html>

@@ -27,10 +27,12 @@ def validate_time_format(time_input):
 
 
 def main_btn():
+    app_url = "t.me/avito282228_bot/awdawdawdawf"
     kb = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton(text='Добавить задачу', callback_data='add_task')
     btn2 = types.InlineKeyboardButton(text='Просмотреть задачи', callback_data='view_tasks')
-    kb.add(btn1, btn2)
+    btn3 = types.InlineKeyboardButton(text="Открыть Mini App", url=app_url)
+    kb.add(btn1, btn2, btn3)
     return kb
 
 
