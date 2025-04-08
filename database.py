@@ -37,10 +37,10 @@ class Database:
 
 
 
-    def create_task(self, user_id, task, time):
+    def create_task(self, user_id, task):
         with sqlite3.connect('ignore/data.db') as connection:
             cursor = connection.cursor()
-
+            time = datetime.today().strftime("%d.%m.%Y %H:%M")
             cursor.execute(f'INSERT INTO Tasks (task, time, user_id) VALUES (?, ?, ?)',
                            (task, time, user_id))
 
@@ -74,6 +74,12 @@ class Database:
         with sqlite3.connect('ignore/data.db') as connection:
             cursor = connection.cursor()
             cursor.execute(f'DELETE FROM Tasks WHERE rowid = ? AND user_id = ?', (task_id, user_id))
+
+    def delete_task_with_name(self, user_id, task):
+        with sqlite3.connect('ignore/data.db') as connection:
+            cursor = connection.cursor()
+            cursor.execute(f'DELETE FROM Tasks WHERE task = ? AND user_id = ?', (task, user_id))
+
 
     def done_task(self, user_id, task_id):
         with sqlite3.connect('ignore/data.db') as connection:

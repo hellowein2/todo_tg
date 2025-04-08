@@ -77,6 +77,16 @@
                 {% endfor %}
             </ul>
         </div>
+                <div class="actions">
+            <button onclick="addTask()">Добавить задачу</button>
+            <button onclick="deleteTask()">Удалить задачу</button>
+            <button onclick="toggleComplete()">Вычеркнуть</button>
+            <button onclick="remind()">Напомнить</button>
+        </div>
+    </div>
+
+    <!-- Подключаем внешний файл JavaScript -->
+    <script src="/static/scripts.js"></script>
     </div>
 </body>
 </html>

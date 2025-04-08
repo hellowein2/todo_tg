@@ -43,7 +43,7 @@ def add_task(message, edit_msg):
                           message_id=edit_msg.message_id,
                           reply_markup=kb)
 
-    db.create_task(message.from_user.id, message.text, datetime.today().strftime("%d.%m.%Y %H:%M"))
+    db.create_task(message.from_user.id, message.text)
 
 
 def format_date_russian(date_string):
