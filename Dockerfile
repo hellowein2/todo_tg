@@ -1,21 +1,20 @@
-FROM python:3.12.3
+# Используем официальный Python образ
+FROM python:3.12-slim
 
-RUN apt-get update && apt-get install -y locales
-
-RUN sed -i '/ru_RU.UTF-8/s/^# //g' /etc/locale.gen && \
-    locale-gen
-
-ENV LANG ru_RU.UTF-8
-ENV LANGUAGE ru_RU:ru
-ENV LC_ALL ru_RU.UTF-8
-
+# Устанавливаем рабочую директорию
 WORKDIR /app
-RUN mkdir ignore
 
+# Копируем файл с зависимостями
 COPY requirements.txt .
 
+# Устанавливаем зависимости
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Копируем остальные файлы приложения
 COPY . .
 
-CMD ["python", "main.py"]
+# Указываем порт, который будет прослушивать наш сервер внутри контейнера
+EXPOSE 80
+
+# Команда для запуска приложения
+CMD ["uvicorn", "app.main_web:app", "--host", "0.0.0.0", "--port", "80"]
