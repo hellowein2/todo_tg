@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+
 db = Database('ignore/data.db')
 
 app = FastAPI()
@@ -14,13 +15,13 @@ templates = Jinja2Templates(directory="app/templates")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],  # Разрешение запросов с любых источников
-#     allow_credentials=True,
-#     allow_methods=["*"],  # Разрешение всех методов, таких как GET и POST
-#     allow_headers=["*"],  # Разрешение всех заголовков
-# )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Разрешение запросов с любых источников
+    allow_credentials=True,
+    allow_methods=["*"],  # Разрешение всех методов, таких как GET и POST
+    allow_headers=["*"],  # Разрешение всех заголовков
+)
 
 
 class Task(BaseModel):
@@ -47,3 +48,8 @@ async def read_root(request: Request):
     return templates.TemplateResponse('index.html', {'request': request,
                                                      'pending_tasks': pending_tasks,
                                                      'completed_tasks': completed_tasks})
+
+
+@app.post("/verify")
+async def verify_user(auth_data):
+    print(auth_data)
