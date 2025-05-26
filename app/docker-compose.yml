@@ -1,28 +1,20 @@
-version: "2.35.1"
+version: '2.35.1'
 
 services:
-  fastapi:
+  web:
     build: .
-    restart: always
+    ports:
+      - "8000:80"  # Порт 8000 хост-системы перенаправляется на порт 80 контейнера
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
 
   nginx:
     image: nginx:latest
     ports:
-      - "80:80"
-      - "443:443"
+      - "80:80"  # Прослушивает порты 80 хоста и контейнера
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
+      - ./nginx.conf:/etc/nginx/nginx.conf
     depends_on:
-      - fastapi
-    restart: always
-
-  certbot:
-    image: certbot/certbot
-    volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    entrypoint: ""
-    depends_on:
-      - nginx
+      - web
