@@ -1,10 +1,13 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from database import Database
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import hashlib
+import hmac
+from urllib.parse import parse_qsl
 
 
 db = Database('ignore/data.db')
@@ -26,6 +29,27 @@ app.add_middleware(
 
 class Task(BaseModel):
     task: str
+
+
+
+
+def check_init_data(init_data: str, bot_token: str):
+    data = dict(parse_qsl(init_data))
+    if 'hash' not in data:
+        raise ValueError("No hash in init_data")
+
+    hash_to_check = data.pop('hash')
+
+    data_check_arr = [f"{k}={v}" for k,v in sorted(data.items())]
+    data_check_string = "\n".join(data_check_arr)
+
+    secret_key = hashlib.sha256(bot_token.encode()).digest()
+    calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+
+    is_valid = calculated_hash == hash_to_check
+    return is_valid, data
+
+
 
 
 @app.post("/tasks")
@@ -52,5 +76,19 @@ async def read_root(request: Request):
 
 
 @app.post("/verify")
-async def verify_user(auth_data):
-    return {"message": auth_data}
+async def verify(request: Request):
+    body = await request.json()
+    init_data = body.get('initData')
+    if not init_data:
+        raise HTTPException(status_code=400, detail="initData missing")
+
+    try:
+        valid, user_data = check_init_data(init_data, BOT_TOKEN)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    if not valid:
+        raise HTTPException(status_code=422, detail="Invalid initData hash")
+
+    # Здесь можно вернуть нужные данные клиенту, например user id
+    return {"user_id": user_data.get("id"), "username": user_data.get("username"), "data": user_data}
