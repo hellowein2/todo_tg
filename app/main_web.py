@@ -53,4 +53,4 @@ async def read_root(request: Request):
 
 @app.post("/verify")
 async def verify_user(auth_data):
-    print(auth_data)
+    return {"message": auth_data}
