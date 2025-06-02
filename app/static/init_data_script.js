@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // Получение initData
         const initData = window.Telegram.WebApp.initData;
+        console.log(typeof initData, initData);
 
         // Выполнение запроса к серверу
         fetch('https://serega-sosi.ru/verify', {
