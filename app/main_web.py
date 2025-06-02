@@ -8,10 +8,11 @@ from pydantic import BaseModel
 import hashlib
 import hmac
 from urllib.parse import parse_qsl
+import os
 
 
 db = Database('ignore/data.db')
-
+API_TOKEN = os.environ.get('BOT_TOKEN')
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
 
@@ -83,7 +84,7 @@ async def verify(request: Request):
         raise HTTPException(status_code=400, detail="initData missing")
 
     try:
-        valid, user_data = check_init_data(init_data, BOT_TOKEN)
+        valid, user_data = check_init_data(init_data, API_TOKEN)
     except Exception as e:
         raise HTTPException(status_code=422, detail=str(e))
 
