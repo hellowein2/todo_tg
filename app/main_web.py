@@ -42,6 +42,7 @@ async def delete_task(task_name: str):
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
+    print('dawwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww')
     p, c = db.get_tasks(1014139378)
     pending_tasks = [f"{i[1]}" for i in p]
     completed_tasks = [f"{i[1]}" for i in c]
