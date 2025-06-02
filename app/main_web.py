@@ -78,20 +78,29 @@ async def read_root(request: Request):
 
 
 @app.post("/verify")
+@app.post("/verify")
 async def verify(request: Request):
     body = await request.json()
     init_data = body.get('initData')
-    print('инит дата пришла', init_data)
+    print("Получен initData:", init_data)
+    print("API_TOKEN:", API_TOKEN)  # Проверим, что токен не пустой
+
     if not init_data:
         raise HTTPException(status_code=400, detail="initData missing")
+
+    if not API_TOKEN or API_TOKEN.strip() == "":
+        print("Ошибка: BOT_TOKEN не установлен!")
+        raise HTTPException(status_code=422, detail="Server configuration error: BOT_TOKEN missing")
 
     try:
         valid, user_data = check_init_data(init_data, API_TOKEN)
     except Exception as e:
-        raise HTTPException(status_code=422, detail=str(e))
+        print("Ошибка в check_init_data:", e)
+        raise HTTPException(status_code=422, detail=f"Check init_data error: {str(e)}")
 
     if not valid:
+        print("Ошибка: Некорректная подпись initData")
         raise HTTPException(status_code=422, detail="Invalid initData hash")
 
-    # Здесь можно вернуть нужные данные клиенту, например user id
+    print("initData проверен успешно, user_data:", user_data)
     return {"user_id": user_data.get("id"), "username": user_data.get("username"), "data": user_data}
