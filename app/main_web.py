@@ -13,7 +13,7 @@ import os
 
 db = Database('ignore/data.db')
 API_TOKEN = os.environ.get('BOT_TOKEN')
-print(API_TOKEN)
+
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
 
@@ -68,7 +68,7 @@ async def delete_task(task_name: str):
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
-    print('dawwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww')
+    print(API_TOKEN)
     p, c = db.get_tasks(1014139378)
     pending_tasks = [f"{i[1]}" for i in p]
     completed_tasks = [f"{i[1]}" for i in c]
