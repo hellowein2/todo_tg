@@ -81,6 +81,7 @@ async def read_root(request: Request):
 async def verify(request: Request):
     body = await request.json()
     init_data = body.get('initData')
+    print('инит дата пришла')
     if not init_data:
         raise HTTPException(status_code=400, detail="initData missing")
 
