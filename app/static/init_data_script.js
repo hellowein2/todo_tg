@@ -5,8 +5,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // Получение initData
         const initData = window.Telegram.WebApp.initData;
-        console.log("initData typeof:", typeof initData);
-        console.log("initData value:", initData);
 
 
         // Выполнение запроса к серверу
