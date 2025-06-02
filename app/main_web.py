@@ -13,6 +13,7 @@ import os
 
 db = Database('ignore/data.db')
 API_TOKEN = os.environ.get('BOT_TOKEN')
+print(API_TOKEN)
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
 
