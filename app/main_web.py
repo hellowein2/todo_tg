@@ -37,6 +37,8 @@ class Task(BaseModel):
 
 def check_init_data(init_data: str, bot_token: str):
     data = dict(parse_qsl(init_data))
+    data.pop('signature', None)  # Убираем 'signature', он не нужен для проверки
+
     if 'hash' not in data:
         raise ValueError("No hash in init_data")
 
