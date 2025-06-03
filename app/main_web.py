@@ -83,17 +83,16 @@ async def verify(data: InitDataRequest):
 
     print("Hash из данных:", hash_value)
     print("Data-check-string:\n", data_check_string)
-    return {'data': data_check_string}
 
-    # if hash_value is None:
-    #     return {"error": "Hash отсутствует в данных"}
-    #
-    # calculated_hash = hmac.new(secret_key, data_check_string.encode('utf-8'), hashlib.sha256).hexdigest()
-    #
-    # if calculated_hash == hash_value:
-    #     print('УРААААААА - подпись верна!')
-    #     return {"status": "valid"}
-    # else:
-    #     print('Подпись не совпадает!')
-    #     return {"status": "invalid"}
+    if hash_value is None:
+        return {"error": "Hash отсутствует в данных"}
+
+    calculated_hash = hmac.new(secret_key, data_check_string.encode('utf-8'), hashlib.sha256).hexdigest()
+
+    if calculated_hash == hash_value:
+        print('УРААААААА - подпись верна!')
+        return {"status": "valid"}
+    else:
+        print('Подпись не совпадает!')
+        return {"status": "invalid"}
 
