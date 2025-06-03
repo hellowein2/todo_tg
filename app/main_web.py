@@ -39,10 +39,8 @@ def check_init_data(init_data: str, bot_token: str):
     if 'hash' not in data:
         raise ValueError("No hash in init_data")
 
-    data.pop('signature', None)
-
     hash_to_check = data.pop('hash')
-    hash_to_check = unquote(hash_to_check)
+    data.pop('signature', None)  # если есть signature, убираем
 
     data_check_arr = [f"{k}={v}" for k, v in sorted(data.items())]
     data_check_string = "\n".join(data_check_arr)
@@ -50,11 +48,7 @@ def check_init_data(init_data: str, bot_token: str):
     secret_key = hashlib.sha256(bot_token.encode()).digest()
     calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
 
-    print("Calculated hash:", calculated_hash)
-    print("Hash to check:", hash_to_check)
-
-    is_valid = calculated_hash == hash_to_check
-    return is_valid, data
+    return calculated_hash == hash_to_check, data
 
 
 
