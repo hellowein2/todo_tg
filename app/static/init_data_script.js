@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function() {
         let initData = window.Telegram.WebApp.initData;
 
         // Отправляем initData на бек
-        fetch('/verify', {
+        fetch('https://serega-sosi.ru/verify', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
