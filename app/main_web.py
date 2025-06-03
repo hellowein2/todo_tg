@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import hashlib
 import hmac
-from urllib.parse import parse_qsl
+from urllib.parse import parse_qsl, parse_qs
 import os
 from urllib.parse import urlencode, unquote
 
@@ -32,24 +32,29 @@ app.add_middleware(
 class Task(BaseModel):
     task: str
 
+class InitDataRequest(BaseModel):
+    initData: str
 
-def check_init_data(init_data: str, bot_token: str):
-    data = dict(parse_qsl(init_data))
 
-    if 'hash' not in data:
-        raise ValueError("No hash in init_data")
 
-    hash_to_check = data.pop('hash')
-    data.pop('signature', None)  # если есть signature, убираем
+def make_data_check_string(init_data: str) -> str:
+    # Парсим строку параметров в список кортежей [(key, value), ...]
+    params_list = parse_qsl(init_data, keep_blank_values=True)
 
-    data_check_arr = [f"{k}={v}" for k, v in sorted(data.items())]
-    data_check_string = "\n".join(data_check_arr)
+    # Превращаем в словарь
+    params = dict(params_list)
 
-    secret_key = hashlib.sha256(bot_token.encode()).digest()
-    calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+    # Убираем поля, которые не должны участвовать в подписи
+    params.pop('hash', None)
+    params.pop('signature', None)
 
-    return calculated_hash == hash_to_check, data
+    # Сортируем по ключам
+    sorted_items = sorted(params.items())
 
+    # Формируем строку для проверки
+    data_check_string = '\n'.join(f"{k}={v}" for k, v in sorted_items)
+
+    return data_check_string
 
 
 @app.post("/tasks")
@@ -75,13 +80,29 @@ async def read_root(request: Request):
                                                      'completed_tasks': completed_tasks})
 
 
-class InitDataRequest(BaseModel):
-    initData: str
+
+
 
 @app.post("/verify")
 async def verify(data: InitDataRequest):
     init_data = data.initData
     print("Получен initData:", init_data)
-    # Здесь можешь дальше проверять init_data и обрабатывать
+    data_check_string = make_data_check_string(init_data)
+
+    secret_key = hashlib.sha256(API_TOKEN.encode()).digest()
+
+    params = parse_qs(init_data)
+
+    # Получаем hash (он будет в списке, берем первый элемент)
+    hash_value = params.get('hash', [None])[0]
+
+    print("Hash:", hash_value)
+
+
+    if hmac.new(secret_key, data_check_string.encode('utf-8'),
+                hashlib.sha256).hexdigest() == hash_value:
+        print('УРААААААА')
+
+
     return {"message": "Данные получены", "received_initData": init_data}
 
