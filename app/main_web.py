@@ -78,6 +78,7 @@ async def read_root(request: Request):
 @app.post("/verify")
 async def verify(request: Request):
     body = await request.json()
+
     init_data = body.get('initData')
     print("Получен initData:", init_data)
     print("API_TOKEN:", API_TOKEN)
@@ -85,14 +86,8 @@ async def verify(request: Request):
     if not init_data:
         raise HTTPException(status_code=400, detail="initData missing")
 
-    # Не конвертируем dict обратно в строку — считаем, что initData всегда строка
     if not isinstance(init_data, str):
-        # Если initData в теле вдруг пришёл как объект, то ошибка
-        raise HTTPException(status_code=422, detail="initData must be string")
-
-    if not API_TOKEN or API_TOKEN.strip() == "":
-        print("Ошибка: BOT_TOKEN не установлен!")
-        raise HTTPException(status_code=422, detail="Server configuration error: BOT_TOKEN missing")
+        raise HTTPException(status_code=422, detail="initData must be a string")
 
     try:
         valid, user_data = check_init_data(init_data, API_TOKEN)
@@ -105,3 +100,4 @@ async def verify(request: Request):
         raise HTTPException(status_code=422, detail="Invalid initData hash")
 
     print("initData проверен успешно, user_data:", user_data)
+
