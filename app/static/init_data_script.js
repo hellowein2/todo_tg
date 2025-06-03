@@ -1,30 +1,27 @@
 document.addEventListener("DOMContentLoaded", function() {
     if (window.Telegram && window.Telegram.WebApp) {
-        // Инициализация вашего Web App
+        // Инициализация Web App
         window.Telegram.WebApp.ready();
 
-        // Получение initData
-        const initData = window.Telegram.WebApp.initData;
+        // Получаем initData (строка параметров)
+        let initData = window.Telegram.WebApp.initData;
 
-
-        // Выполнение запроса к серверу
-        fetch('https://serega-sosi.ru/verify', {
+        // Отправляем initData на бек
+        fetch('/verify', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ initData })
+            body: JSON.stringify({ initData: initData }),
         })
         .then(response => response.json())
         .then(data => {
-            console.log('User ID:', data.user_id);
-            alert('Ваш User ID: ' + data.user_id);
+            console.log('Ответ сервера:', data);
         })
         .catch(error => {
             console.error('Ошибка:', error);
-            alert('Произошла ошибка при получении User ID');
         });
     } else {
-        console.error("соси");
+        console.error("Telegram WebApp не найден");
     }
 });
