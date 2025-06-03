@@ -78,6 +78,7 @@ async def read_root(request: Request):
                                                      'completed_tasks': completed_tasks})
 
 
+@app.post("/verify")
 async def verify(request: Request):
     body = await request.json()
     init_data = body.get('initData')
