@@ -9,7 +9,7 @@ import hashlib
 import hmac
 from urllib.parse import parse_qsl
 import os
-
+from urllib.parse import urlencode
 
 db = Database('ignore/data.db')
 API_TOKEN = os.environ.get('BOT_TOKEN')
@@ -78,23 +78,29 @@ async def read_root(request: Request):
                                                      'completed_tasks': completed_tasks})
 
 
-@app.post("/verify")
-@app.post("/verify")
 async def verify(request: Request):
     body = await request.json()
     init_data = body.get('initData')
     print("Получен initData:", init_data)
-    print("API_TOKEN:", API_TOKEN)  # Проверим, что токен не пустой
+    print("API_TOKEN:", API_TOKEN)
 
     if not init_data:
         raise HTTPException(status_code=400, detail="initData missing")
+
+    if isinstance(init_data, dict):
+        # Конвертируем словарь назад в строку параметров
+        init_data_str = urlencode(init_data, doseq=True)
+    elif isinstance(init_data, str):
+        init_data_str = init_data
+    else:
+        raise HTTPException(status_code=422, detail="initData has unexpected type")
 
     if not API_TOKEN or API_TOKEN.strip() == "":
         print("Ошибка: BOT_TOKEN не установлен!")
         raise HTTPException(status_code=422, detail="Server configuration error: BOT_TOKEN missing")
 
     try:
-        valid, user_data = check_init_data(init_data, API_TOKEN)
+        valid, user_data = check_init_data(init_data_str, API_TOKEN)
     except Exception as e:
         print("Ошибка в check_init_data:", e)
         raise HTTPException(status_code=422, detail=f"Check init_data error: {str(e)}")
@@ -104,4 +110,3 @@ async def verify(request: Request):
         raise HTTPException(status_code=422, detail="Invalid initData hash")
 
     print("initData проверен успешно, user_data:", user_data)
-    return {"user_id": user_data.get("id"), "username": user_data.get("username"), "data": user_data}
