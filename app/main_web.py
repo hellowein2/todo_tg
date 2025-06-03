@@ -38,23 +38,12 @@ class InitDataRequest(BaseModel):
 
 
 def make_data_check_string(init_data: str) -> str:
-    # Парсим строку параметров в список кортежей [(key, value), ...]
     params_list = parse_qsl(init_data, keep_blank_values=True)
-
-    # Превращаем в словарь
     params = dict(params_list)
-
-    # Убираем поля, которые не должны участвовать в подписи
     params.pop('hash', None)
     params.pop('signature', None)
-
-    # Сортируем по ключам
     sorted_items = sorted(params.items())
-
-    # Формируем строку для проверки
-    data_check_string = '\n'.join(f"{k}={v}" for k, v in sorted_items)
-
-    return data_check_string
+    return '\n'.join(f"{k}={v}" for k, v in sorted_items)
 
 
 @app.post("/tasks")
@@ -87,22 +76,24 @@ async def read_root(request: Request):
 async def verify(data: InitDataRequest):
     init_data = data.initData
     print("Получен initData:", init_data)
+
     data_check_string = make_data_check_string(init_data)
-
     secret_key = hashlib.sha256(API_TOKEN.encode()).digest()
+    params = dict(parse_qsl(init_data))
+    hash_value = params.get('hash', None)
 
-    params = parse_qs(init_data)
+    print("Hash из данных:", hash_value)
+    print("Data-check-string:\n", data_check_string)
 
-    # Получаем hash (он будет в списке, берем первый элемент)
-    hash_value = params.get('hash', [None])[0]
+    if hash_value is None:
+        return {"error": "Hash отсутствует в данных"}
 
-    print("Hash:", hash_value)
+    calculated_hash = hmac.new(secret_key, data_check_string.encode('utf-8'), hashlib.sha256).hexdigest()
 
-
-    if hmac.new(secret_key, data_check_string.encode('utf-8'),
-                hashlib.sha256).hexdigest() == hash_value:
-        print('УРААААААА')
-
-
-    return {"message": "Данные получены", "received_initData": init_data}
+    if calculated_hash == hash_value:
+        print('УРААААААА - подпись верна!')
+        return {"status": "valid"}
+    else:
+        print('Подпись не совпадает!')
+        return {"status": "invalid"}
 
