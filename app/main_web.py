@@ -9,7 +9,7 @@ import hashlib
 import hmac
 from urllib.parse import parse_qsl
 import os
-from urllib.parse import urlencode
+from urllib.parse import urlencode, unquote
 
 db = Database('ignore/data.db')
 API_TOKEN = os.environ.get('BOT_TOKEN')
