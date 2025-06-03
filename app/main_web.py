@@ -39,11 +39,10 @@ class InitDataRequest(BaseModel):
 
 def make_data_check_string(init_data: str) -> str:
     params_list = parse_qsl(init_data, keep_blank_values=True)
-    params = dict(params_list)
-    params.pop('hash', None)
-    params.pop('signature', None)
-    sorted_items = sorted(params.items())
-    return '\n'.join(f"{k}={v}" for k, v in sorted_items)
+    # Не превращай в dict, а оставь список, чтобы сохранить порядок и точные значения
+    filtered = [(k, v) for k, v in params_list if k not in ('hash', 'signature')]
+    filtered.sort(key=lambda x: x[0])
+    return '\n'.join(f"{k}={v}" for k, v in filtered)
 
 
 @app.post("/tasks")
