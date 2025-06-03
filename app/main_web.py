@@ -85,20 +85,17 @@ async def verify(request: Request):
     if not init_data:
         raise HTTPException(status_code=400, detail="initData missing")
 
-    if isinstance(init_data, dict):
-        # Конвертируем словарь назад в строку параметров
-        init_data_str = urlencode(init_data, doseq=True)
-    elif isinstance(init_data, str):
-        init_data_str = init_data
-    else:
-        raise HTTPException(status_code=422, detail="initData has unexpected type")
+    # Не конвертируем dict обратно в строку — считаем, что initData всегда строка
+    if not isinstance(init_data, str):
+        # Если initData в теле вдруг пришёл как объект, то ошибка
+        raise HTTPException(status_code=422, detail="initData must be string")
 
     if not API_TOKEN or API_TOKEN.strip() == "":
         print("Ошибка: BOT_TOKEN не установлен!")
         raise HTTPException(status_code=422, detail="Server configuration error: BOT_TOKEN missing")
 
     try:
-        valid, user_data = check_init_data(init_data_str, API_TOKEN)
+        valid, user_data = check_init_data(init_data, API_TOKEN)
     except Exception as e:
         print("Ошибка в check_init_data:", e)
         raise HTTPException(status_code=422, detail=f"Check init_data error: {str(e)}")
