@@ -33,18 +33,18 @@ class Task(BaseModel):
     task: str
 
 
-
-
 def check_init_data(init_data: str, bot_token: str):
     data = dict(parse_qsl(init_data))
-    data.pop('signature', None)  # Убираем 'signature', он не нужен для проверки
 
     if 'hash' not in data:
         raise ValueError("No hash in init_data")
 
+    # Удаляем 'signature', если есть
+    data.pop('signature', None)
+
     hash_to_check = data.pop('hash')
 
-    data_check_arr = [f"{k}={v}" for k,v in sorted(data.items())]
+    data_check_arr = [f"{k}={v}" for k, v in sorted(data.items())]
     data_check_string = "\n".join(data_check_arr)
 
     secret_key = hashlib.sha256(bot_token.encode()).digest()
@@ -52,7 +52,6 @@ def check_init_data(init_data: str, bot_token: str):
 
     is_valid = calculated_hash == hash_to_check
     return is_valid, data
-
 
 
 
