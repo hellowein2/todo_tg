@@ -75,29 +75,13 @@ async def read_root(request: Request):
                                                      'completed_tasks': completed_tasks})
 
 
+class InitDataRequest(BaseModel):
+    initData: str
+
 @app.post("/verify")
-async def verify(request: Request):
-    body = await request.json()
-
-    init_data = body.get('initData')
+async def verify(data: InitDataRequest):
+    init_data = data.initData
     print("Получен initData:", init_data)
-    print("API_TOKEN:", API_TOKEN)
-
-    if not init_data:
-        raise HTTPException(status_code=400, detail="initData missing")
-
-    if not isinstance(init_data, str):
-        raise HTTPException(status_code=422, detail="initData must be a string")
-
-    try:
-        valid, user_data = check_init_data(init_data, API_TOKEN)
-    except Exception as e:
-        print("Ошибка в check_init_data:", e)
-        raise HTTPException(status_code=422, detail=f"Check init_data error: {str(e)}")
-
-    if not valid:
-        print("Ошибка: Некорректная подпись initData", user_data)
-        raise HTTPException(status_code=422, detail="Invalid initData hash")
-
-    print("initData проверен успешно, user_data:", user_data)
+    # Здесь можешь дальше проверять init_data и обрабатывать
+    return {"message": "Данные получены", "received_initData": init_data}
 
