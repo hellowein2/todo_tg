@@ -99,7 +99,7 @@ async def verify(request: Request):
         raise HTTPException(status_code=422, detail=f"Check init_data error: {str(e)}")
 
     if not valid:
-        print("Ошибка: Некорректная подпись initData")
+        print("Ошибка: Некорректная подпись initData", user_data)
         raise HTTPException(status_code=422, detail="Invalid initData hash")
 
     print("initData проверен успешно, user_data:", user_data)
