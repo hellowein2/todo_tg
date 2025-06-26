@@ -112,4 +112,4 @@ async def validate_init_data(request: InitDataRequest, response: Response,
         response.set_cookie(key="user_id", value=str(user_id), httponly=True, secure=True)
     else:
         user_id = user_cookie
-        return {"status": "valid", "user_id": user_id}
+    return {"status": "valid", "user_id": user_id}
