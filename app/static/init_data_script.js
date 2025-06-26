@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function() {
         window.Telegram.WebApp.ready();
 
         if (!getCookie('user_cookie')) {
-            console.log('Куки нет, отправляем запрос');
+            console.log('Куки нет, отправляем запрос', getCookie('user_cookie'));
             let initData = window.Telegram.WebApp.initData;
 
             fetch('https://serega-sosi.ru/verify', {
