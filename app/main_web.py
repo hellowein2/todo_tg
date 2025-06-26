@@ -116,5 +116,4 @@ async def validate_init_data(request: InitDataRequest):
     if not user_id:
         raise HTTPException(status_code=400, detail="user_id не найден в initData")
 
-    await send_message(user_id, f"Ваш user_id: {user_id}")
     return {"status": "valid", "user_id": user_id, "user_data": user_data}
