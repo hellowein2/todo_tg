@@ -30,12 +30,10 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .then(data => {
                 console.log('Ответ сервера:', data);
-                if (window.location.pathname !== '/') {
+
                     console.log('Перенаправляем на /');
                     window.location.href = "/";
-                } else {
-                    console.log('Уже на главной странице, перенаправление не требуется');
-                }
+
             }).catch(error => {
                 console.error('Ошибка запроса:', error);
             });
