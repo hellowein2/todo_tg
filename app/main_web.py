@@ -1,8 +1,8 @@
 import json
 import urllib
 from time import time
-
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Response
+from fastapi.params import Cookie
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from database import Database
@@ -13,7 +13,7 @@ import hashlib
 import hmac
 from urllib.parse import parse_qsl, parse_qs
 import os
-from urllib.parse import urlencode, unquote
+from typing import Annotated
 
 db = Database('ignore/data.db')
 API_TOKEN = os.environ.get('BOT_TOKEN')
@@ -98,14 +98,18 @@ async def validate_telegram_init_data(init_data: str):
         return user_data
     return {}
 @app.post("/verify")
-async def validate_init_data(request: InitDataRequest):
-    user_data = await validate_telegram_init_data(request.initData)
+async def validate_init_data(request: InitDataRequest, response: Response,
+                             user_cookie: Annotated[str | None, Cookie()]= None):
+    if not user_cookie:
+        user_data = await validate_telegram_init_data(request.initData)
 
-    if not user_data:
-        raise HTTPException(status_code=403, detail="Некорректная initData")
+        if not user_data:
+            raise HTTPException(status_code=403, detail="Некорректная initData")
 
-    user_id = user_data.get("id")
-    if not user_id:
-        raise HTTPException(status_code=400, detail="user_id не найден в initData")
-
-    return {"status": "valid", "user_id": user_id}
+        user_id = user_data.get("id")
+        if not user_id:
+            raise HTTPException(status_code=400, detail="user_id не найден в initData")
+        response.set_cookie(key="user_id", value=str(user_id), httponly=True, secure=True)
+    else:
+        user_id = user_cookie
+        return {"status": "valid", "user_id": user_id}
