@@ -1,3 +1,4 @@
+import json
 import urllib
 from time import time
 
@@ -77,9 +78,10 @@ async def validate_telegram_init_data(init_data: str) -> bool:
     if not parsed_data.get("hash") or not parsed_data.get("auth_date"):
         return False
 
-    # Извлекаем hash и auth_date
+
     received_hash = parsed_data["hash"][0]
     auth_date = int(parsed_data["auth_date"][0])
+    user_data = json.loads(parsed_data["user"][0])
 
     # Проверяем, что auth_date не слишком старая (например, не старше 24 часов)
     if abs(time() - auth_date) > 86400:
@@ -102,9 +104,16 @@ async def validate_telegram_init_data(init_data: str) -> bool:
     # Сравниваем с полученным hash
     return computed_hash == received_hash
 @app.post("/verify")
-async def verify(request: InitDataRequest):
-    is_valid = await validate_telegram_init_data(request.initData)
+async def validate_init_data(request: InitDataRequest):
+    is_valid, user_data = await validate_telegram_init_data(request.initData)
+
     if not is_valid:
         raise HTTPException(status_code=403, detail="Некорректная initData")
-    return {"status": "valid"}
 
+    # Извлекаем user_id
+    user_id = user_data.get("id")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="user_id не найден в initData")
+
+    # Возвращаем user_id в ответе API
+    return {"status": "valid", "user_id": user_id, "user_data": user_data}
