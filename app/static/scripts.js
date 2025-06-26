@@ -39,7 +39,7 @@ function addTask() {
 function deleteTask() {
     const taskName = prompt('Введите задачу, которую нужно удалить:');
     if (taskName) {
-        fetch(`http://localhost:8000/tasks/${encodeURIComponent(taskName)}`, {
+        fetch(`https://serega-sosi.ru/tasks/${encodeURIComponent(taskName)}`, {
             method: 'DELETE',
         })
         .then(response => response.json())
