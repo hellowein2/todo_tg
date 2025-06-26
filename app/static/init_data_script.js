@@ -18,8 +18,7 @@ document.addEventListener("DOMContentLoaded", function() {
         .then(data => {
             console.log('Ответ сервера:', data);
             window.location.href = "/";
-        }).then(() => window.location.reload())
-            .catch(error => {
+        }).catch(error => {
             console.error('Ошибка:', error);
         });
     } else {
