@@ -17,7 +17,7 @@ function addTaskToDOM(task, category) {
 function addTask() {
     const newTask = prompt('Введите новую задачу:');
     if (newTask) {
-        fetch('http://serega-sosi.ru/tasks', {
+        fetch('https://serega-sosi.ru/tasks', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
