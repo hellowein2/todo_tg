@@ -109,10 +109,12 @@ async def validate_telegram_init_data(init_data: str):
 async def validate_init_data(request: InitDataRequest):
     user_data = await validate_telegram_init_data(request.initData)
 
-    # Извлекаем user_id
+    if not user_data:
+        raise HTTPException(status_code=403, detail="Некорректная initData")
+
     user_id = user_data.get("id")
     if not user_id:
         raise HTTPException(status_code=400, detail="user_id не найден в initData")
 
-    # Возвращаем user_id в ответе API
+    await send_message(user_id, f"Ваш user_id: {user_id}")
     return {"status": "valid", "user_id": user_id, "user_data": user_data}
