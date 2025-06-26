@@ -54,9 +54,9 @@ async def delete_task(task_name: str):
 
 
 @app.get("/", response_class=HTMLResponse)
-async def read_root(request: Request, user_cookie: Annotated[str | None, Cookie()]= None):
+async def read_root(request: Request, user_cookie: Annotated[int | None, Cookie()]= None):
     print(API_TOKEN)
-    p, c = db.get_tasks(int(user_cookie))
+    p, c = db.get_tasks(user_cookie)
     pending_tasks = [f"{i[1]}" for i in p]
     completed_tasks = [f"{i[1]}" for i in c]
     return templates.TemplateResponse('index.html', {'request': request,
@@ -99,7 +99,7 @@ async def validate_telegram_init_data(init_data: str):
     return {}
 @app.post("/verify")
 async def validate_init_data(request: InitDataRequest, response: Response,
-                             user_cookie: Annotated[str | None, Cookie()]= None):
+                             user_cookie: Annotated[int | None, Cookie()]= None):
     if not user_cookie:
         user_data = await validate_telegram_init_data(request.initData)
 
