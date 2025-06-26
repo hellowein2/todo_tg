@@ -6,10 +6,14 @@ document.addEventListener("DOMContentLoaded", function() {
         return null;
     }
 
+    console.log('Куки:', document.cookie); // Логируем все куки
+    console.log('user_cookie:', getCookie('user_cookie')); // Логируем конкретную куки
+
     if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.ready();
 
-        if (!getCookie('user_cookie')) { // Запускаем только если куки нет
+        if (!getCookie('user_cookie')) {
+            console.log('Куки нет, отправляем запрос');
             let initData = window.Telegram.WebApp.initData;
 
             fetch('https://serega-sosi.ru/verify', {
@@ -20,12 +24,20 @@ document.addEventListener("DOMContentLoaded", function() {
                 body: JSON.stringify({ initData: initData }),
                 credentials: 'include'
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Статус ответа:', response.status); // Логируем статус
+                return response.json();
+            })
             .then(data => {
                 console.log('Ответ сервера:', data);
-                window.location.href = "/";
+                if (window.location.pathname !== '/') {
+                    console.log('Перенаправляем на /');
+                    window.location.href = "/";
+                } else {
+                    console.log('Уже на главной странице, перенаправление не требуется');
+                }
             }).catch(error => {
-                console.error('Ошибка:', error);
+                console.error('Ошибка запроса:', error);
             });
         } else {
             console.log('Кука user_cookie уже есть, запрос не нужен');
