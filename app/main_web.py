@@ -1,3 +1,6 @@
+import urllib
+from time import time
+
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -68,31 +71,40 @@ async def read_root(request: Request):
                                                      'completed_tasks': completed_tasks})
 
 
+async def validate_telegram_init_data(init_data: str) -> bool:
+    # Парсим initData
+    parsed_data = urllib.parse.parse_qs(init_data)
+    if not parsed_data.get("hash") or not parsed_data.get("auth_date"):
+        return False
 
+    # Извлекаем hash и auth_date
+    received_hash = parsed_data["hash"][0]
+    auth_date = int(parsed_data["auth_date"][0])
 
+    # Проверяем, что auth_date не слишком старая (например, не старше 24 часов)
+    if abs(time() - auth_date) > 86400:
+        return False
 
+    # Создаем секретный ключ
+    secret_key = hmac.new(b"WebAppData", API_TOKEN.encode(), hashlib.sha256).digest()
+
+    # Формируем строку данных для проверки
+    data_check_string = []
+    for key, value in parsed_data.items():
+        if key != "hash":
+            data_check_string.append(f"{key}={value[0]}")
+
+    data_check_string = "\n".join(sorted(data_check_string))
+
+    # Вычисляем HMAC-SHA-256
+    computed_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+
+    # Сравниваем с полученным hash
+    return computed_hash == received_hash
 @app.post("/verify")
-async def verify(data: InitDataRequest):
-    init_data = data.initData
-    print("Получен initData:", init_data)
-
-    data_check_string = make_data_check_string(init_data)
-    secret_key = hashlib.sha256(API_TOKEN.encode()).digest()
-    params = dict(parse_qsl(init_data))
-    hash_value = params.get('hash', None)
-
-    print("Hash из данных:", hash_value)
-    print("Data-check-string:\n", data_check_string)
-
-    if hash_value is None:
-        return {"error": "Hash отсутствует в данных"}
-
-    calculated_hash = hmac.new(secret_key, data_check_string.encode('utf-8'), hashlib.sha256).hexdigest()
-
-    if calculated_hash == hash_value:
-        print('УРААААААА - подпись верна!')
-        return {"status": "valid"}
-    else:
-        print('Подпись не совпадает!')
-        return {"status": "invalid"}
+async def verify(request: InitDataRequest):
+    is_valid = await validate_telegram_init_data(request.initData)
+    if not is_valid:
+        raise HTTPException(status_code=403, detail="Некорректная initData")
+    return {"status": "valid"}
 
