@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ initData: initData }),
+            credentials: 'include'
         })
         .then(response => response.json())
         .then(data => {
