@@ -72,7 +72,7 @@ async def read_root(request: Request):
                                                      'completed_tasks': completed_tasks})
 
 
-async def validate_telegram_init_data(init_data: str) -> bool:
+async def validate_telegram_init_data(init_data: str):
     # Парсим initData
     parsed_data = urllib.parse.parse_qs(init_data)
     if not parsed_data.get("hash") or not parsed_data.get("auth_date"):
@@ -102,13 +102,12 @@ async def validate_telegram_init_data(init_data: str) -> bool:
     computed_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
 
     # Сравниваем с полученным hash
-    return computed_hash == received_hash
+    if computed_hash == received_hash:
+        return user_data
+    return {}
 @app.post("/verify")
 async def validate_init_data(request: InitDataRequest):
-    is_valid, user_data = await validate_telegram_init_data(request.initData)
-
-    if not is_valid:
-        raise HTTPException(status_code=403, detail="Некорректная initData")
+    user_data = await validate_telegram_init_data(request.initData)
 
     # Извлекаем user_id
     user_id = user_data.get("id")
