@@ -1,8 +1,6 @@
 FROM python:3.12-slim
 
-WORKDIR /app
+WORKDIR /app/pre-build
 
-
-COPY . /app/
 
 CMD ["python", "pre-build.py"]
