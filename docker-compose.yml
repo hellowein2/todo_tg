@@ -1,4 +1,10 @@
 services:
+  pre-build:
+    build: ./pre-build
+    container_name: pre-build
+    volumes:
+      - ./ignore:/ignore
+
   web:
     build: .
     volumes:
