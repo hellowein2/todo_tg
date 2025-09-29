@@ -1,6 +1,7 @@
+import os
 import telebot
 
-from app.main_web import API_TOKEN
+API_TOKEN = os.environ.get("API_TOKEN")
 
 
 bot = telebot.TeleBot(API_TOKEN)
