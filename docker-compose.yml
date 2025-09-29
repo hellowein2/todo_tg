@@ -30,7 +30,6 @@ services:
     env_file:
       - .env
     volumes:
-      - ./database.py:/app/database.py
       - ./ignore:/app/ignore
     depends_on:
       - pre-build
