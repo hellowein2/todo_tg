@@ -1,11 +1,8 @@
-FROM python:3.12-slim
+FROM base:lastest
 
 WORKDIR /app
 
-COPY requirements.txt /app/requirements.txt
 
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY /main_bot/main_bot.py /app/main_bot.py
+COPY main_bot/ /app/
 
 CMD ["python", "/app/main_bot.py"]

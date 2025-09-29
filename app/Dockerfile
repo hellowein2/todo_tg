@@ -1,8 +1,8 @@
-FROM python:3.12-slim
+FROM base:lastest
 
 WORKDIR /app
 
-COPY . .
+COPY app/ /app/
 
 EXPOSE 80
 

@@ -1,10 +1,8 @@
-FROM python:3.12-slim
+FROM base:lastest
 
 WORKDIR /app
 
 
-
-
-COPY pre-build.py /app/pre-build.py
+COPY pre-build.py/ /app/
 
 CMD ["python", "/app/pre-build.py"]

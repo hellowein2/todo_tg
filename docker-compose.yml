@@ -1,4 +1,10 @@
 services:
+  base:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+
+
   pre-build:
     build: ./pre-build
     container_name: pre-build
