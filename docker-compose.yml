@@ -6,7 +6,8 @@ services:
       - ./ignore:/ignore
 
   main_bot:
-    build: ./main_bot
+    build:
+      context: ./main_bot
     container_name: main_bot
     env_file:
       - .env
