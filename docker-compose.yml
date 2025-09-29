@@ -2,7 +2,7 @@ services:
   base:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: base.Dockerfile
 
   pre-build:
     build: ./pre-build
