@@ -5,4 +5,4 @@ WORKDIR /app
 
 COPY . /app/
 
-CMD ["python", "/pre-build/pre-build.py"]
+CMD ["python", "pre-build.py"]

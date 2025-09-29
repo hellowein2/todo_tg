@@ -5,4 +5,4 @@ WORKDIR /app
 
 COPY . /app/
 
-CMD ["python", "/main_bot/main_bot.py"]
+CMD ["python", "/main_bot.py"]
