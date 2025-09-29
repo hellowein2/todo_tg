@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import hashlib
 import hmac
-from urllib.parse import parse_qsl, parse_qs
+from urllib.parse import parse_qsl
 import os
 from typing import Annotated
 
