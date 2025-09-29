@@ -19,9 +19,9 @@ db = Database('ignore/data.db')
 API_TOKEN = os.environ.get('BOT_TOKEN')
 
 app = FastAPI()
-templates = Jinja2Templates(directory="app/templates")
+templates = Jinja2Templates(directory="templates")
 
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 app.add_middleware(
