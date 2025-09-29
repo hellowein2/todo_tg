@@ -24,9 +24,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: app/Dockerfile
-    volumes:
-      - .:/app
+      dockerfile: web_app/Dockerfile
     environment:
       - PYTHONUNBUFFERED=1
     env_file:
