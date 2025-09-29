@@ -5,7 +5,7 @@ from fastapi import FastAPI, Request, HTTPException, Response
 from fastapi.params import Cookie
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from web_app.database import Database
+from database import Database
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
