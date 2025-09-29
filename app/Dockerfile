@@ -1,4 +1,4 @@
-FROM base:lastest
+FROM project-base:latest
 
 WORKDIR /app
 
