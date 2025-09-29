@@ -1,6 +1,8 @@
 FROM my_base:latest
 
-WORKDIR /app/app
+WORKDIR /app
+
+COPY ./app /app/
 
 EXPOSE 80
 

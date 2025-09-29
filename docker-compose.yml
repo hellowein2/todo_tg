@@ -5,7 +5,9 @@ services:
       dockerfile: base.Dockerfile
 
   pre-build:
-    build: ./pre-build
+    build:
+      context: .
+      dockerfile: pre-build/Dockerfile
     container_name: pre-build
     volumes:
       - ./ignore:/ignore
@@ -20,7 +22,9 @@ services:
 
 
   web:
-    build: ./app
+    build:
+      context: .
+      dockerfile: app/Dockerfile
     volumes:
       - .:/app
     environment:

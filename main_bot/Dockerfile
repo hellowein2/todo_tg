@@ -1,6 +1,8 @@
 FROM my_base:latest
 
-WORKDIR /app/main_bot
+WORKDIR /app
+
+COPY ./main_bot /app/
 
 
 

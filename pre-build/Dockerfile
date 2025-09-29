@@ -1,6 +1,8 @@
 FROM my_base:latest
 
-WORKDIR /app/pre-build
+WORKDIR /app
+
+COPY ./pre-build /app/
 
 
 CMD ["python", "pre-build.py"]
