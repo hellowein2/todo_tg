@@ -2,9 +2,7 @@ services:
   base:
     build:
       context: .
-      dockerfile: Dockerfile.base
-    image: project-base:latest
-    container_name: base
+      dockerfile: Dockerfile
 
   pre-build:
     build: ./pre-build
