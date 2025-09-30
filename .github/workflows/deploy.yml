@@ -1,0 +1,23 @@
+name: Deploy to VDS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: SSH deploy
+      uses: appleboy/ssh-action@v0.1.9
+      with:
+        host: ${{ secrets.VDS_IP }}
+        username: ${{ secrets.VDS_USER }}
+        key: ${{ secrets.VDS_SSH_KEY }}
+        script: |
+          cd /root/todo_tg
+          git pull
+          docker-compose build --no-cache
+          docker-compose up -d
