@@ -10,7 +10,7 @@ bot = telebot.TeleBot(API_TOKEN)
 
 @bot.message_handler(commands=['help', 'start'])
 def send_welcome(message):
-    bot.send_message(chat_id=message.chat.id, text='666')
+    bot.send_message(chat_id=message.chat.id, text='6565')
 
 
 if __name__ == '__main__':
