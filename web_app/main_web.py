@@ -112,7 +112,10 @@ async def validate_init_data(request: InitDataRequest, response: Response,
         user_id = user_data.get("id")
         if not user_id:
             raise HTTPException(status_code=400, detail="user_id не найден в initData")
+
+        response = RedirectResponse(url="/")
         response.set_cookie(key="user_cookie", value=str(user_id), httponly=True, secure=True)
+        return response
 
     response = RedirectResponse(url="/")
     return response
