@@ -39,7 +39,7 @@ class Task(BaseModel):
 class InitDataRequest(BaseModel):
     initData: str
 
-@app.get("tasks")
+@app.get("/tasks")
 async def get_tasks(user_cookie: Annotated[int | None, Cookie()]= None):
     p, c = db.get_tasks(user_cookie)
     pending_tasks = [f"{i[1]}" for i in p]
