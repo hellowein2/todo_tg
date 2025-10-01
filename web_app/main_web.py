@@ -42,8 +42,8 @@ class InitDataRequest(BaseModel):
 
 
 @app.post("/tasks")
-async def add_task(task: Task):
-    db.create_task(user_id=1014139378, task=task.task)
+async def add_task(task: Task, user_cookie: Annotated[int | None, Cookie()]= None):
+    db.create_task(user_id=user_cookie, task=task.task)
     return {"message": "Задача добавлена", "task": task.task}
 
 
