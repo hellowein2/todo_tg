@@ -55,7 +55,6 @@ async def delete_task(task_name: str):
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request, user_cookie: Annotated[int | None, Cookie()]= None):
-    print(user_cookie)
     p, c = db.get_tasks(user_cookie)
     pending_tasks = [f"{i[1]}" for i in p]
     completed_tasks = [f"{i[1]}" for i in c]

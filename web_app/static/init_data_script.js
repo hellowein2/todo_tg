@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 const rootPaths = ['/', '/index.html', '/index'];
                 if (!rootPaths.includes(window.location.pathname)) {
                     console.log('Перенаправляем на /');
-                    window.location.href = "/";
+                     window.location.reload();
                 } else {
                     console.log('Уже на главной странице, перенаправление не требуется');
                 }
