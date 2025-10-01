@@ -44,7 +44,7 @@ async function deleteTask() {
     const task = prompt("Введите задачу для удаления:");
     if (!task) return;
 
-    let resp = await fetch(/tasks/${encodeURIComponent(task)}, {
+    let resp = await fetch(`/tasks/${encodeURIComponent(task)}`, {
         method: "DELETE"
     });
 
