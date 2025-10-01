@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function() {
         // Функция для проверки валидности куки и загрузки данных
         function checkAndLoadData() {
             const initData = window.Telegram.WebApp.initData;
-            fetch('https://serega-sosi.ru/verify', {
+            fetch('https://sosi-serega.ru/verify', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

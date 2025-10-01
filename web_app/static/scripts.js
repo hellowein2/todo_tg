@@ -17,7 +17,7 @@ function addTaskToDOM(task, category) {
 function addTask() {
     const newTask = prompt('Введите новую задачу:');
     if (newTask) {
-        fetch('https://serega-sosi.ru/tasks', {
+        fetch('https://sosi-serega.ru/tasks', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -39,7 +39,7 @@ function addTask() {
 function deleteTask() {
     const taskName = prompt('Введите задачу, которую нужно удалить:');
     if (taskName) {
-        fetch(`https://serega-sosi.ru/tasks/${encodeURIComponent(taskName)}`, {
+        fetch(`https://sosi-serega.ru/tasks/${encodeURIComponent(taskName)}`, {
             method: 'DELETE',
         })
         .then(response => response.json())
