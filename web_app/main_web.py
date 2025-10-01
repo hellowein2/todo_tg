@@ -56,8 +56,8 @@ async def add_task(task: Task, user_cookie: Annotated[int | None, Cookie()]= Non
 
 
 @app.delete("/tasks/{task_name}")
-async def delete_task(task_name: str):
-    db.delete_task_with_name(user_id=1014139378, task=task_name)
+async def delete_task(task_name: str, user_cookie: Annotated[int | None, Cookie()]= None):
+    db.delete_task_with_name(user_id=user_cookie, task=task_name)
     return {"message": "Задача удаленна", "task": task_name}
 
 
@@ -109,18 +109,17 @@ async def validate_telegram_init_data(init_data: str):
 @app.post("/verify")
 async def validate_init_data(request: InitDataRequest, response: Response,
                              user_cookie: Annotated[int | None, Cookie()]= None):
-    if not user_cookie:
-        user_data = await validate_telegram_init_data(request.initData)
 
-        if not user_data:
-            raise HTTPException(status_code=403, detail="Некорректная initData")
+    user_data = await validate_telegram_init_data(request.initData)
 
-        user_id = user_data.get("id")
-        if not user_id:
-            raise HTTPException(status_code=400, detail="user_id не найден в initData")
+    if not user_data:
+        raise HTTPException(status_code=403, detail="Некорректная initData")
 
-        response = RedirectResponse(url="/")
-        response.set_cookie(key="user_cookie", value=str(user_id), httponly=True, secure=True)
-        return response
+    user_id = user_data.get("id")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="user_id не найден в initData")
 
-    return RedirectResponse(url="/", status_code=303)
+    response = RedirectResponse(url="/")
+    response.set_cookie(key="user_cookie", value=str(user_id), httponly=True, secure=True)
+    return response
+

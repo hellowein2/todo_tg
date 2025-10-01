@@ -1,6 +1,5 @@
 import os
 import telebot
-
 API_TOKEN = os.environ.get("BOT_TOKEN")
 
 
