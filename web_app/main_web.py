@@ -3,7 +3,7 @@ import urllib
 from time import time
 from fastapi import FastAPI, Request, HTTPException, Response
 from fastapi.params import Cookie
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from database import Database
 from fastapi.staticfiles import StaticFiles
@@ -55,12 +55,15 @@ async def delete_task(task_name: str):
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request, user_cookie: Annotated[int | None, Cookie()]= None):
-    p, c = db.get_tasks(user_cookie)
-    pending_tasks = [f"{i[1]}" for i in p]
-    completed_tasks = [f"{i[1]}" for i in c]
-    return templates.TemplateResponse('index.html', {'request': request,
-                                                     'pending_tasks': pending_tasks,
-                                                     'completed_tasks': completed_tasks})
+    if user_cookie is None:
+        return RedirectResponse("/verify")
+    else:
+        p, c = db.get_tasks(user_cookie)
+        pending_tasks = [f"{i[1]}" for i in p]
+        completed_tasks = [f"{i[1]}" for i in c]
+        return templates.TemplateResponse('index.html', {'request': request,
+                                                         'pending_tasks': pending_tasks,
+                                                         'completed_tasks': completed_tasks})
 
 
 async def validate_telegram_init_data(init_data: str):
@@ -96,6 +99,7 @@ async def validate_telegram_init_data(init_data: str):
     if computed_hash == received_hash:
         return user_data
     return {}
+
 @app.post("/verify")
 async def validate_init_data(request: InitDataRequest, response: Response,
                              user_cookie: Annotated[int | None, Cookie()]= None):
@@ -109,6 +113,6 @@ async def validate_init_data(request: InitDataRequest, response: Response,
         if not user_id:
             raise HTTPException(status_code=400, detail="user_id не найден в initData")
         response.set_cookie(key="user_cookie", value=str(user_id), httponly=True, secure=True)
-    else:
-        user_id = user_cookie
-    return {"status": "valid", "user_id": user_id}
+
+    response = RedirectResponse(url="/")
+    return response
