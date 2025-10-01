@@ -14,10 +14,10 @@ document.addEventListener("DOMContentLoaded", () => {
     credentials: 'include',
     body: JSON.stringify({ initData })
   })
-  .then(res => {
-    if (!res.ok) throw new Error(`Ошибка ${res.status}`);
-    return res.json();
-  })
+.then(res => {
+  if (!res.ok) throw new Error(`Ошибка ${res.status}`);
+  return res.json();
+})
   .then(data => {
     document.getElementById('dataContainer')?.innerText = data.someField || 'Данные отсутствуют';
     if (window.location.pathname !== '/') window.location.reload();
