@@ -41,36 +41,43 @@ class InitDataRequest(BaseModel):
 
 @app.get("/tasks")
 async def get_tasks(user_cookie: Annotated[int | None, Cookie()]= None):
-    p, c = db.get_tasks(user_cookie)
-    pending_tasks = [f"{i[1]}" for i in p]
-    completed_tasks = [f"{i[1]}" for i in c]
-    return {
-        "pending_tasks": pending_tasks,
-        "completed_tasks": completed_tasks
-    }
-
+    if user_cookie:
+        p, c = db.get_tasks(user_cookie)
+        pending_tasks = [f"{i[1]}" for i in p]
+        completed_tasks = [f"{i[1]}" for i in c]
+        return {
+            "pending_tasks": pending_tasks,
+            "completed_tasks": completed_tasks
+        }
+    else:
+        return {"status": "error(none cookie)"}
 @app.post("/tasks")
 async def add_task(task: Task, user_cookie: Annotated[int | None, Cookie()]= None):
-    db.create_task(user_id=user_cookie, task=task.task)
-    return {"message": "Задача добавлена", "task": task.task}
-
+    if user_cookie:
+        db.create_task(user_id=user_cookie, task=task.task)
+        return {"message": "Задача добавлена", "task": task.task}
+    else:
+        return {"status": "error(none cookie)"}
 
 @app.delete("/tasks/{task_name}")
 async def delete_task(task_name: str, user_cookie: Annotated[int | None, Cookie()]= None):
-    db.delete_task_with_name(user_id=user_cookie, task=task_name)
-    return {"message": "Задача удаленна", "task": task_name}
-
+    if user_cookie:
+        db.delete_task_with_name(user_id=user_cookie, task=task_name)
+        return {"message": "Задача удаленна", "task": task_name}
+    else:
+        return {"status": "error(none cookie)"}
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request, user_cookie: Annotated[int | None, Cookie()]= None):
-
-    p, c = db.get_tasks(user_cookie)
-    pending_tasks = [f"{i[1]}" for i in p]
-    completed_tasks = [f"{i[1]}" for i in c]
-    return templates.TemplateResponse('index.html', {'request': request,
-                                                     'pending_tasks': pending_tasks,
-                                                     'completed_tasks': completed_tasks})
-
+    if user_cookie:
+        p, c = db.get_tasks(user_cookie)
+        pending_tasks = [f"{i[1]}" for i in p]
+        completed_tasks = [f"{i[1]}" for i in c]
+        return templates.TemplateResponse('index.html', {'request': request,
+                                                         'pending_tasks': pending_tasks,
+                                                         'completed_tasks': completed_tasks})
+    else:
+        return {"status": "error(none cookie)"}
 
 async def validate_telegram_init_data(init_data: str):
     # Парсим initData
