@@ -117,5 +117,4 @@ async def validate_init_data(request: InitDataRequest, response: Response,
         response.set_cookie(key="user_cookie", value=str(user_id), httponly=True, secure=True)
         return response
 
-    response = RedirectResponse(url="/")
-    return response
+    return RedirectResponse(url="/", status_code=303)
