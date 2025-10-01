@@ -19,8 +19,51 @@ async function verifyUser() {
         }
 
         console.log("Авторизация прошла успешно");
+        await loadTasks(); // сразу загружаем список задач
     } catch (err) {
         console.error("Ошибка запроса:", err);
+    }
+}
+
+// === Загрузка задач ===
+async function loadTasks() {
+    let resp = await fetch("/tasks");
+    if (!resp.ok) {
+        console.error("Ошибка загрузки задач");
+        return;
+    }
+
+    let data = await resp.json();
+    renderTasks(data.pending_tasks, data.completed_tasks);
+}
+
+function renderTasks(pending, completed) {
+    const pendingList = document.querySelector(".task-category:nth-child(2) ul");
+    const completedList = document.querySelector(".task-category:nth-child(1) ul");
+
+    pendingList.innerHTML = "";
+    completedList.innerHTML = "";
+
+    if (completed.length > 0) {
+        completed.forEach(task => {
+            let li = document.createElement("li");
+            li.className = "completed";
+            li.textContent = task;
+            completedList.appendChild(li);
+        });
+    } else {
+        completedList.innerHTML = "<li class='pending'>Нет выполненных задач.</li>";
+    }
+
+    if (pending.length > 0) {
+        pending.forEach(task => {
+            let li = document.createElement("li");
+            li.className = "pending";
+            li.textContent = task;
+            pendingList.appendChild(li);
+        });
+    } else {
+        pendingList.innerHTML = "<li class='completed'>Нет невыполненных задач.</li>";
     }
 }
 
@@ -36,7 +79,7 @@ async function addTask() {
     });
 
     if (resp.ok) {
-        location.reload();
+        await loadTasks();
     }
 }
 
@@ -49,7 +92,7 @@ async function deleteTask() {
     });
 
     if (resp.ok) {
-        location.reload();
+        await loadTasks();
     }
 }
 
