@@ -69,15 +69,13 @@ async def delete_task(task_name: str, user_cookie: Annotated[int | None, Cookie(
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request, user_cookie: Annotated[int | None, Cookie()]= None):
-    if user_cookie:
-        p, c = db.get_tasks(user_cookie)
-        pending_tasks = [f"{i[1]}" for i in p]
-        completed_tasks = [f"{i[1]}" for i in c]
-        return templates.TemplateResponse('index.html', {'request': request,
-                                                         'pending_tasks': pending_tasks,
-                                                         'completed_tasks': completed_tasks})
-    else:
-        return {"status": "error(none cookie)"}
+    p, c = db.get_tasks(user_cookie)
+    pending_tasks = [f"{i[1]}" for i in p]
+    completed_tasks = [f"{i[1]}" for i in c]
+    return templates.TemplateResponse('index.html', {'request': request,
+                                                     'pending_tasks': pending_tasks,
+                                                     'completed_tasks': completed_tasks})
+
 
 async def validate_telegram_init_data(init_data: str):
     # Парсим initData
