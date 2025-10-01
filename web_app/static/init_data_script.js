@@ -3,53 +3,27 @@ document.addEventListener("DOMContentLoaded", function() {
         window.Telegram.WebApp.ready();
         console.log('initData:', window.Telegram.WebApp.initData);
 
-        // Функция для проверки валидности куки и загрузки данных
         function checkAndLoadData() {
             const initData = window.Telegram.WebApp.initData;
             fetch('https://sosi-serega.ru/verify', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Cache-Control': 'no-cache'
-                },
-                body: JSON.stringify({ initData: initData }),
-                credentials: 'include' // Отправляем user_cookie, если она есть
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initData }),
+                credentials: 'include' // чтобы отправлять куки
             })
             .then(response => {
-                console.log('Статус ответа:', response.status);
-                console.log('Response headers:', [...response.headers.entries()]);
                 if (!response.ok) {
-                    if (response.status === 401 || response.status === 403) {
-                        // Куки недействительна, сбрасываем localStorage
-                        console.log('Куки недействительна, сбрасываем user_verified');
-                        localStorage.removeItem('user_verified');
-                    }
-                    throw new Error(`Сервер вернул ошибку: ${response.status}`);
+                    console.error('Ошибка верификации:', response.status);
+                    localStorage.removeItem('user_verified');
+                    throw new Error(`Ошибка верификации: ${response.status}`);
                 }
                 return response.json();
             })
             .then(data => {
-                console.log('Ответ сервера:', JSON.stringify(data, null, 2));
-                // Устанавливаем флаг, если верификация прошла успешно
+                console.log('Верификация успешна:', data);
                 localStorage.setItem('user_verified', 'true');
-                // Обновляем интерфейс
-                const dataContainer = document.getElementById('dataContainer');
-                if (dataContainer && data.someField) { // Замените someField на нужное поле
-                    dataContainer.innerText = data.someField;
-                } else {
-                    console.log('Данные отсутствуют или элемент UI не найден');
-                    if (dataContainer) {
-                        dataContainer.innerText = 'Данные отсутствуют';
-                    }
-                }
-                // Проверяем перенаправление
-                const rootPaths = ['/', '/index.html', '/index'];
-                if (!rootPaths.includes(window.location.pathname)) {
-                    console.log('Перенаправляем на /');
-                     window.location.reload();
-                } else {
-                    console.log('Уже на главной странице, перенаправление не требуется');
-                }
+                // Перезагружаем страницу, чтобы куки применились и задачи загрузились
+                window.location.reload();
             })
             .catch(error => {
                 console.error('Ошибка запроса:', error);
@@ -60,15 +34,29 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }
 
-        // Если флага нет, отправляем запрос
         if (!localStorage.getItem('user_verified')) {
-            console.log('Флага нет, отправляем запрос');
+            console.log('Флага нет, запускаем валидацию');
             checkAndLoadData();
         } else {
-            console.log('Флаг user_verified есть, проверяем валидность куки и загружаем данные');
-            // Проверяем, действительна ли куки, и загружаем данные
-            checkAndLoadData();
+            console.log('Профиль проверен, загружаем задачи обычным способом');
+            // Здесь лучше просто сделать fetch запрос на твой API, чтобы загрузить задачи,
+            // куки уже есть, сервер их прочитает
+            loadTasks();
         }
+
+        // Пример функции загрузки задач (замени на свой код)
+        function loadTasks() {
+            fetch('/tasks', { credentials: 'include' })
+            .then(res => res.json())
+            .then(tasks => {
+                const container = document.getElementById('dataContainer');
+                if (container) {
+                    container.innerText = JSON.stringify(tasks, null, 2);
+                }
+            })
+            .catch(err => console.error('Ошибка загрузки задач:', err));
+        }
+
     } else {
         console.error("Telegram WebApp не найден");
         const dataContainer = document.getElementById('dataContainer');
