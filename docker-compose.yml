@@ -10,7 +10,7 @@ services:
       dockerfile: pre-build/Dockerfile
     container_name: pre-build
     volumes:
-      - ./ignore:/ignore
+      - ./ignore:/app/ignore
 
   main_bot:
     build:
