@@ -54,8 +54,11 @@ async def get_tasks(user_cookie: Annotated[int | None, Cookie()]= None):
 @app.post("/tasks")
 async def add_task(task: Task, user_cookie: Annotated[int | None, Cookie()]= None):
     if user_cookie:
-        db.create_task(user_id=user_cookie, task=task.task)
-        return {"message": "Задача добавлена", "task": task.task}
+        result = db.create_task(user_id=user_cookie, task=task.task)
+        if result:
+            return {"message": "Задача добавлена", "task": task.task}
+        else:
+            return {"error": "Задача с таким текстом уже существует", "task": task.task}
     else:
         return {"status": "error(none cookie)"}
 

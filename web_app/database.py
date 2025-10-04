@@ -40,9 +40,14 @@ class Database:
     def create_task(self, user_id, task):
         with sqlite3.connect('ignore/data.db') as connection:
             cursor = connection.cursor()
+            # Проверка на уникальность задачи по тексту для пользователя
+            cursor.execute('SELECT 1 FROM Tasks WHERE user_id = ? AND task = ?', (user_id, task))
+            if cursor.fetchone():
+                return False  # Такая задача уже есть
             time = datetime.today().strftime("%d.%m.%Y %H:%M")
-            cursor.execute(f'INSERT INTO Tasks (task, time, user_id) VALUES (?, ?, ?)',
+            cursor.execute('INSERT INTO Tasks (task, time, user_id) VALUES (?, ?, ?)',
                            (task, time, user_id))
+            return True
 
     def get_tasks(self, user_id):
         with sqlite3.connect('ignore/data.db') as connection:
