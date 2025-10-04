@@ -20,5 +20,6 @@ jobs:
         script: |
           cd /root/todo_tg
           git pull
+          docker-compose down
           docker-compose up --build -d
 

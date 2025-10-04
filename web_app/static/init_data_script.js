@@ -81,7 +81,7 @@ async function addTask() {
     if (resp.ok) {
         let data = await resp.json();
         if (data.error) {
-            alert(data.error);
+            alert("Задача с таким текстом уже существует");
         } else {
             await loadTasks();
         }
