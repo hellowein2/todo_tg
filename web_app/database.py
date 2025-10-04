@@ -104,3 +104,10 @@ class Database:
 
             cursor.execute(f'UPDATE Tasks SET reminder_time = ? WHERE rowid = ?',
                            (time, task_id))
+
+    def get_task_id_by_text(self, user_id, task_text):
+        with sqlite3.connect('ignore/data.db') as connection:
+            cursor = connection.cursor()
+            cursor.execute('SELECT rowid FROM Tasks WHERE user_id = ? AND task = ?', (user_id, task_text))
+            result = cursor.fetchone()
+            return result[0] if result else None
