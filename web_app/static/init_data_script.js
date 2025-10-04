@@ -80,6 +80,7 @@ async function addTask() {
 
     if (resp.ok) {
         let data = await resp.json();
+        console.log("Ответ сервера:", data); // Для отладки
         if (data.error) {
             alert("Задача с таким текстом уже существует");
         } else {
