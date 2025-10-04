@@ -37,7 +37,7 @@ services:
     image: nginx:latest
     ports:
       - "8080:80"
-      - "8443:443"
+      - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - /etc/letsencrypt/live/sosi-serega.ru:/etc/letsencrypt/live/sosi-serega.ru:ro
