@@ -69,14 +69,20 @@ function renderTasks(pending, completed) {
 
 // === Работа с задачами ===
 async function addTask() {
+    console.log("addTask вызвана"); // Лог для проверки вызова функции
     const task = prompt("Введите новую задачу:");
-    if (!task) return;
+    if (!task) {
+        console.log("Пустая задача, выход");
+        return;
+    }
 
     let resp = await fetch("/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ task })
     });
+
+    console.log("fetch завершён, статус:", resp.status);
 
     if (resp.ok) {
         let data = await resp.json();
