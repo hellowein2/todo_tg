@@ -79,7 +79,14 @@ async function addTask() {
     });
 
     if (resp.ok) {
-        await loadTasks();
+        let data = await resp.json();
+        if (data.error) {
+            alert(data.error);
+        } else {
+            await loadTasks();
+        }
+    } else {
+        alert("Ошибка при добавлении задачи");
     }
 }
 
